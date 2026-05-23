@@ -2,19 +2,22 @@
 
 Xsnow for macOS is a lightweight menu bar prototype that renders falling snow across connected macOS displays without blocking normal app interaction.
 
-The project is currently at **MVP 0.1 implementation start**. The repository version is `0.1.0`, stored in `VERSION`. The repository includes product requirements, architecture notes, an MVP implementation plan, and a SwiftPM-based AppKit/SpriteKit prototype.
+The project is currently at **MVP 0.3 implementation start**. The repository version is `0.1.3`, stored in `VERSION`. The repository includes product requirements, architecture notes, an MVP implementation plan, and a SwiftPM-based AppKit/SpriteKit prototype.
 
 ## Current Status
 
 Completed so far:
 
 - Defined initial version `0.1.0`.
+- Defined MVP 0.2 feature and architecture scope.
 - Created repository contributor guide in `AGENTS.md`.
 - Reviewed `1.XSNOW PRD.md` and identified requirement risks around performance targets, permissions, fullscreen behavior, and testability.
 - Added an `MVP v0.1` scope section to `1.XSNOW PRD.md`.
 - Added an `MVP v0.1` architecture section to `2.XSNOW ADD.md`.
 - Added `3.MVP 0.1 IMPLEMENTATION PLAN.md`.
 - Started MVP 0.1 implementation with a Swift Package Manager project.
+- Started MVP 0.2 implementation with persisted settings, density control, wind presets, per-display toggles, and debug status.
+- Started MVP 0.3 implementation with a throttled window layout scanner and debug window count.
 - Verified `swift build` succeeds.
 
 ## MVP 0.1 Scope
@@ -55,9 +58,12 @@ Excluded from MVP 0.1:
         ├── AppDelegate.swift
         ├── DisplayController.swift
         ├── DisplayDetector.swift
+        ├── DisplayIdentity.swift
         ├── OverlayWindow.swift
+        ├── SettingsStore.swift
         ├── SnowScene.swift
         ├── StatusMenuController.swift
+        ├── WindowLayoutScanner.swift
         ├── XsnowManager.swift
         └── main.swift
 ```
@@ -69,9 +75,12 @@ Excluded from MVP 0.1:
 - `XsnowManager`: orchestrates menu state, display overlays, and sleep/wake handling.
 - `StatusMenuController`: owns the menu bar item and Start/Stop/Quit actions.
 - `DisplayDetector`: watches macOS display configuration changes.
+- `DisplayIdentity`: creates stable display identifiers and user-facing display labels.
 - `DisplayController`: owns one overlay window and SpriteKit scene per display.
 - `OverlayWindow`: transparent, borderless, click-through AppKit window.
+- `SettingsStore`: persists global and per-display settings through `UserDefaults`.
 - `SnowScene`: simple SpriteKit falling snow particle scene.
+- `WindowLayoutScanner`: samples visible third-party window bounds for future collision support.
 
 ## Build and Run
 
@@ -100,6 +109,9 @@ Not yet verified manually:
 - Visual snow rendering on all connected displays
 - Click-through behavior over Finder, Safari, and Xcode
 - Display connect/disconnect overlay rebuild
+- Settings restoration after app relaunch
+- Density, wind, and per-display menu behavior
+- Window scanner debug count
 - Sleep/wake resume behavior
 - CPU and memory usage in Activity Monitor
 
@@ -111,8 +123,8 @@ For now, use `swift build` for compile verification and the manual validation ch
 
 ## Next Steps
 
-1. Run `swift run Xsnow` and manually validate the MVP checklist.
-2. Tune overlay window level for fullscreen apps, Stage Manager, and Spaces.
-3. Confirm display coordinate behavior for monitors arranged above or left of the main display.
-4. Record CPU and RAM usage at the default snow density.
-5. Add persistent settings and per-display controls in a later MVP.
+1. Run `swift run Xsnow` and manually validate MVP 0.1, 0.2, and 0.3 menu behavior.
+2. Confirm settings restoration after app relaunch.
+3. Validate that the debug window count updates as visible windows change.
+4. Design coordinate conversion from CoreGraphics window bounds to per-display SpriteKit coordinates.
+5. Tune overlay window level for fullscreen apps, Stage Manager, and Spaces.

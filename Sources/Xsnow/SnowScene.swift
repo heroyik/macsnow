@@ -4,6 +4,8 @@ import SpriteKit
 @MainActor
 final class SnowScene: SKScene {
     private let emitter = SKEmitterNode()
+    private var density: SnowDensity = .normal
+    private var windStrength = 0.2
 
     override init(size: CGSize) {
         super.init(size: size)
@@ -19,7 +21,14 @@ final class SnowScene: SKScene {
 
     func setSnowEnabled(_ enabled: Bool) {
         isPaused = !enabled
-        emitter.particleBirthRate = enabled ? defaultBirthRate : 0
+        emitter.particleBirthRate = enabled ? currentBirthRate : 0
+    }
+
+    func apply(density: SnowDensity, windStrength: Double) {
+        self.density = density
+        self.windStrength = windStrength
+        emitter.xAcceleration = 40 * windStrength
+        emitter.particleBirthRate = isPaused ? 0 : currentBirthRate
     }
 
     override func didChangeSize(_ oldSize: CGSize) {
@@ -27,13 +36,17 @@ final class SnowScene: SKScene {
         positionEmitter()
     }
 
-    private var defaultBirthRate: CGFloat {
+    private var baseBirthRate: CGFloat {
         max(80, size.width / 18)
+    }
+
+    private var currentBirthRate: CGFloat {
+        baseBirthRate * density.birthRateMultiplier
     }
 
     private func configureEmitter() {
         emitter.particleTexture = makeSnowTexture()
-        emitter.particleBirthRate = defaultBirthRate
+        emitter.particleBirthRate = currentBirthRate
         emitter.particleLifetime = 12
         emitter.particleLifetimeRange = 4
         emitter.particlePositionRange = CGVector(dx: size.width, dy: 0)
@@ -42,7 +55,7 @@ final class SnowScene: SKScene {
         emitter.particleSpeed = 80
         emitter.particleSpeedRange = 45
         emitter.yAcceleration = -18
-        emitter.xAcceleration = 8
+        emitter.xAcceleration = 40 * windStrength
         emitter.particleAlpha = 0.85
         emitter.particleAlphaRange = 0.25
         emitter.particleScale = 0.8
@@ -57,7 +70,7 @@ final class SnowScene: SKScene {
     private func positionEmitter() {
         emitter.position = CGPoint(x: size.width / 2, y: size.height + 12)
         emitter.particlePositionRange = CGVector(dx: size.width, dy: 0)
-        emitter.particleBirthRate = isPaused ? 0 : defaultBirthRate
+        emitter.particleBirthRate = isPaused ? 0 : currentBirthRate
     }
 
     private func makeSnowTexture() -> SKTexture {

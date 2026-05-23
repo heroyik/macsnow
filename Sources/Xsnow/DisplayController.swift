@@ -4,11 +4,13 @@ import SpriteKit
 @MainActor
 final class DisplayController {
     private let screen: NSScreen
+    let identity: DisplayIdentity
     private let window: OverlayWindow
     private let scene: SnowScene
 
-    init(screen: NSScreen) {
+    init(screen: NSScreen, identity: DisplayIdentity) {
         self.screen = screen
+        self.identity = identity
         window = OverlayWindow(screen: screen)
         scene = SnowScene(size: screen.frame.size)
 
@@ -32,5 +34,13 @@ final class DisplayController {
 
     func setSnowEnabled(_ enabled: Bool) {
         scene.setSnowEnabled(enabled)
+    }
+
+    func apply(density: SnowDensity, windStrength: Double) {
+        scene.apply(density: density, windStrength: windStrength)
+    }
+
+    var isSnowActive: Bool {
+        !scene.isPaused
     }
 }
