@@ -19,6 +19,12 @@ Future tests should live in `Tests/XsnowTests/` once the local toolchain exposes
 - `swift test`: currently expected to report no tests until a test target is added.
 - `git diff`: review local changes before committing, once this directory is initialized as a Git repository.
 
+## Versioning
+
+The current project version is stored in `VERSION`. The MVP 0.1 baseline is recorded as `0.1.0`.
+
+For every future repository change, increment the patch version by `0.0.1` before committing. Example: `0.1.0` -> `0.1.1` -> `0.1.2`.
+
 ## Coding Style & Naming Conventions
 
 Use Swift naming conventions for future app code: `UpperCamelCase` for types, `lowerCamelCase` for properties, functions, and local variables. Prefer small, single-purpose types that match the architecture: `XsnowManager`, `DisplayController`, `WindowLayoutScanner`, and `SnowPhysicsEngine`.

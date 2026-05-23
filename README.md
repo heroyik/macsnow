@@ -2,12 +2,13 @@
 
 Xsnow for macOS is a lightweight menu bar prototype that renders falling snow across connected macOS displays without blocking normal app interaction.
 
-The project is currently at **MVP 0.1 implementation start**. The repository includes product requirements, architecture notes, an MVP implementation plan, and a SwiftPM-based AppKit/SpriteKit prototype.
+The project is currently at **MVP 0.1 implementation start**. The repository version is `0.1.0`, stored in `VERSION`. The repository includes product requirements, architecture notes, an MVP implementation plan, and a SwiftPM-based AppKit/SpriteKit prototype.
 
 ## Current Status
 
 Completed so far:
 
+- Defined initial version `0.1.0`.
 - Created repository contributor guide in `AGENTS.md`.
 - Reviewed `1.XSNOW PRD.md` and identified requirement risks around performance targets, permissions, fullscreen behavior, and testability.
 - Added an `MVP v0.1` scope section to `1.XSNOW PRD.md`.
