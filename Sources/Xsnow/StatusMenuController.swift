@@ -23,6 +23,7 @@ final class StatusMenuController {
     var onTogglePolarBear: (() -> Void)?
     var onToggleGroundAgent: (() -> Void)?
     var onToggleGifts: (() -> Void)?
+    var onSelectObjectAmount: ((ObjectAmount) -> Void)?
     var onSelectSantaStyle: ((SantaStyle) -> Void)?
     var onSelectSantaSpeed: ((SantaSpeed) -> Void)?
     var onSelectSantaScale: ((SantaScale) -> Void)?
@@ -68,6 +69,7 @@ final class StatusMenuController {
     private let santaStyleMenu = NSMenu()
     private let santaSpeedMenu = NSMenu()
     private let santaScaleMenu = NSMenu()
+    private let objectAmountMenu = NSMenu()
     private let accumulationSpillMenu = NSMenu()
     private let accumulationRateMenu = NSMenu()
     private let accumulationStyleMenu = NSMenu()
@@ -194,6 +196,16 @@ final class StatusMenuController {
 
         giftsItem.target = self
         menu.addItem(giftsItem)
+
+        let objectAmountRoot = NSMenuItem(title: "Object Amount", action: nil, keyEquivalent: "")
+        menu.addItem(objectAmountRoot)
+        menu.setSubmenu(objectAmountMenu, for: objectAmountRoot)
+        for amount in ObjectAmount.allCases {
+            let item = NSMenuItem(title: amount.title, action: #selector(selectObjectAmount(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = amount.rawValue
+            objectAmountMenu.addItem(item)
+        }
 
         let accumulationSpillRoot = NSMenuItem(title: "Spill Options", action: nil, keyEquivalent: "")
         menu.addItem(accumulationSpillRoot)
@@ -369,6 +381,12 @@ final class StatusMenuController {
         giftsItem.state = enabled ? .on : .off
     }
 
+    func setObjectAmount(_ amount: ObjectAmount) {
+        for item in objectAmountMenu.items {
+            item.state = (item.representedObject as? String) == amount.rawValue ? .on : .off
+        }
+    }
+
     func setAccumulationEnabled(_ enabled: Bool) {
         accumulationItem.state = enabled ? .on : .off
         clearAccumulationItem.isEnabled = enabled
@@ -526,6 +544,16 @@ final class StatusMenuController {
 
     @objc private func toggleGifts() {
         onToggleGifts?()
+    }
+
+    @objc private func selectObjectAmount(_ sender: NSMenuItem) {
+        guard
+            let rawValue = sender.representedObject as? String,
+            let amount = ObjectAmount(rawValue: rawValue)
+        else {
+            return
+        }
+        onSelectObjectAmount?(amount)
     }
 
     @objc private func selectSantaStyle(_ sender: NSMenuItem) {

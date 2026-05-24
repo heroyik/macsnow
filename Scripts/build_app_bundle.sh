@@ -10,12 +10,13 @@ DIST_DIR="$ROOT_DIR/dist"
 APP_DIR="$DIST_DIR/$APP_NAME.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
+RESOURCES_DIR="$CONTENTS_DIR/Resources"
 
 cd "$ROOT_DIR"
 swift build -c "$CONFIGURATION"
 
 rm -rf "$APP_DIR"
-mkdir -p "$MACOS_DIR"
+mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
 
 cp "$BUILD_DIR/$APP_NAME" "$MACOS_DIR/$APP_NAME"
 chmod +x "$MACOS_DIR/$APP_NAME"
@@ -24,6 +25,8 @@ RESOURCE_BUNDLE="$BUILD_DIR/${APP_NAME}_${APP_NAME}.bundle"
 if [[ -d "$RESOURCE_BUNDLE" ]]; then
     cp -R "$RESOURCE_BUNDLE" "$APP_DIR/"
 fi
+
+cp -R "$ROOT_DIR/xsnow-org/xsnow-3.9.1/src/Pixmaps" "$RESOURCES_DIR/Pixmaps"
 
 cat > "$CONTENTS_DIR/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>

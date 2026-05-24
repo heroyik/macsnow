@@ -66,6 +66,9 @@ final class XsnowManager {
         statusMenuController.onToggleGifts = { [weak self] in
             self?.setGiftsEnabled(!(self?.settings.areGiftsEnabled ?? true))
         }
+        statusMenuController.onSelectObjectAmount = { [weak self] amount in
+            self?.setObjectAmount(amount)
+        }
         statusMenuController.onSelectSantaStyle = { [weak self] style in
             self?.setSantaStyle(style)
         }
@@ -137,6 +140,7 @@ final class XsnowManager {
         statusMenuController.setPolarBearEnabled(settings.isPolarBearEnabled)
         statusMenuController.setGroundAgentEnabled(settings.isGroundAgentEnabled)
         statusMenuController.setGiftsEnabled(settings.areGiftsEnabled)
+        statusMenuController.setObjectAmount(settings.objectAmount)
         statusMenuController.setSantaStyle(settings.santaStyle)
         statusMenuController.setSantaSpeed(settings.santaSpeed)
         statusMenuController.setSantaScale(settings.santaScale)
@@ -277,6 +281,13 @@ final class XsnowManager {
         applySettingsToDisplays()
     }
 
+    private func setObjectAmount(_ amount: ObjectAmount) {
+        settings.objectAmount = amount
+        settingsStore.save(settings)
+        statusMenuController.setObjectAmount(amount)
+        applySettingsToDisplays()
+    }
+
     private func setSantaStyle(_ style: SantaStyle) {
         settings.santaStyle = style
         settingsStore.save(settings)
@@ -393,6 +404,7 @@ final class XsnowManager {
             )
             controller.setGroundAgentEnabled(settings.isGroundAgentEnabled)
             controller.setGiftsEnabled(settings.areGiftsEnabled)
+            controller.setObjectAmount(settings.objectAmount)
             controller.setSantaOptions(
                 style: settings.santaStyle,
                 speed: settings.santaSpeed,

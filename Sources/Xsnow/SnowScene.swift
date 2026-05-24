@@ -54,6 +54,16 @@ final class SnowScene: SKScene {
         var nextTargetTime: TimeInterval
     }
 
+    private struct MovingAnimal {
+        let node: SKSpriteNode
+        var target: CGPoint
+        var velocity: CGVector
+        var baseScale: CGFloat
+        var directionFlip: CGFloat
+        var bobPhase: CGFloat
+        var nextTargetTime: TimeInterval
+    }
+
     private struct SantaFlight {
         let node: SKNode
         let sprite: SKSpriteNode?
@@ -127,6 +137,7 @@ final class SnowScene: SKScene {
     private var isPolarBearEnabled = true
     private var isGroundAgentEnabled = true
     private var areGiftsEnabled = true
+    private var objectAmount: ObjectAmount = .normal
     private var santaStyle: SantaStyle = .big
     private var santaSpeed: SantaSpeed = .normal
     private var santaScale: SantaScale = .normal
@@ -160,12 +171,16 @@ final class SnowScene: SKScene {
     private var groundAgentState: GroundAgentState = .idle
     private var groundAgent: SKNode?
     private var movingPolarBear: MovingPolarBear?
+    private var movingAnimals: [MovingAnimal] = []
     private var groundAgentBaseY: CGFloat = 0
     private var groundAgentBobPhase: CGFloat = 0
     private var groundAgentVelocity: CGFloat = 24
+    private var groundAgentTarget: CGPoint?
+    private var groundAgentVelocityVector = CGVector.zero
     private var nextAgentStateChange: TimeInterval = 0
     private var lastAgentUpdateTime: TimeInterval = 0
     private var lastPolarBearUpdateTime: TimeInterval = 0
+    private var lastMovingAnimalUpdateTime: TimeInterval = 0
     private var plantedTreeKeys: Set<String> = []
     private var nextSmoothingTime: TimeInterval = 30
 
@@ -299,7 +314,10 @@ final class SnowScene: SKScene {
         if !enabled {
             movingPolarBear?.node.removeFromParent()
             movingPolarBear = nil
+            movingAnimals.removeAll()
+            agentRoot.children.filter { $0.name == "movingAnimal" }.forEach { $0.removeFromParent() }
             lastPolarBearUpdateTime = 0
+            lastMovingAnimalUpdateTime = 0
         }
         rebuildSeasonalObjects()
     }
@@ -315,6 +333,19 @@ final class SnowScene: SKScene {
             movingPolarBear = nil
             lastPolarBearUpdateTime = 0
         }
+        movingAnimals.removeAll()
+        agentRoot.children.filter { $0.name == "movingAnimal" }.forEach { $0.removeFromParent() }
+        lastMovingAnimalUpdateTime = 0
+        rebuildSeasonalObjects()
+    }
+
+    func setObjectAmount(_ amount: ObjectAmount) {
+        objectAmount = amount
+        birds.removeAll()
+        birdRoot.removeAllChildren()
+        movingAnimals.removeAll()
+        agentRoot.children.filter { $0.name == "movingAnimal" }.forEach { $0.removeFromParent() }
+        rebuildCelestialEffects()
         rebuildSeasonalObjects()
     }
 
@@ -437,6 +468,7 @@ final class SnowScene: SKScene {
         updateGifts(deltaTime: 1.0 / 60.0)
         updateGroundAgent(at: currentTime)
         updateMovingPolarBear(at: currentTime)
+        updateMovingAnimals(at: currentTime)
         smoothAccumulationIfNeeded(at: currentTime)
         settleAccumulationIfNeeded(at: currentTime)
     }
@@ -583,16 +615,22 @@ final class SnowScene: SKScene {
             return
         }
 
-        for _ in 0..<16 {
+        let birdCount = max(4, Int((16.0 * objectAmount.multiplier).rounded()))
+        for _ in 0..<birdCount {
             let bird = makeBird()
             bird.position = CGPoint(
                 x: CGFloat.random(in: 0...size.width),
-                y: CGFloat.random(in: size.height * 0.58...max(size.height * 0.9, size.height * 0.59))
+                y: CGFloat.random(in: size.height * 0.58...max(size.height - 92, size.height * 0.59))
             )
             birdRoot.addChild(bird)
+            let dx = CGFloat.random(in: -0.58...0.58)
+            let dy = CGFloat.random(in: -0.32...0.32)
             birds.append(BirdAgent(
                 node: bird,
-                velocity: CGVector(dx: CGFloat.random(in: -0.42...0.42), dy: CGFloat.random(in: -0.16...0.16)),
+                velocity: CGVector(
+                    dx: abs(dx) < 0.18 ? (dx < 0 ? -0.18 : 0.18) : dx,
+                    dy: abs(dy) < 0.08 ? (dy < 0 ? -0.08 : 0.08) : dy
+                ),
                 frameIndex: Int.random(in: 0..<8),
                 nextFrameTime: currentSceneTime + TimeInterval.random(in: 0...0.2),
                 bobPhase: CGFloat.random(in: 0...(.pi * 2))
@@ -695,6 +733,9 @@ final class SnowScene: SKScene {
             if speed > 0.62 {
                 birds[index].velocity.dx = birds[index].velocity.dx / speed * 0.62
                 birds[index].velocity.dy = birds[index].velocity.dy / speed * 0.62
+            }
+            if abs(birds[index].velocity.dy) < 0.05 {
+                birds[index].velocity.dy += sin(CGFloat(currentTime) * 1.7 + birds[index].bobPhase) * 0.018
             }
             birds[index].node.position.x += birds[index].velocity.dx * deltaTime * 60
             birds[index].node.position.y += birds[index].velocity.dy * deltaTime * 60
@@ -838,7 +879,8 @@ final class SnowScene: SKScene {
             addMoon()
         }
         if areStarsEnabled {
-            for _ in 0..<36 {
+            let starCount = max(12, Int((36.0 * objectAmount.multiplier).rounded()))
+            for _ in 0..<starCount {
                 addStar()
             }
         }
@@ -1046,10 +1088,11 @@ final class SnowScene: SKScene {
             endY = min(yRange.upperBound, max(yRange.lowerBound, endY))
         }
         santa.node.position = CGPoint(x: startX, y: startY)
-        let baseScale = visualScale.value * santaScale.multiplier
-        santa.node.xScale = (startLeft ? 1 : -1) * baseScale * 0.58
-        santa.node.yScale = baseScale * 0.58
-        santa.node.alpha = 0.62
+        let baseScale = min(1.0, visualScale.value * santaScale.multiplier)
+        let farScale = santaPerspectiveScale(for: 0)
+        santa.node.xScale = (startLeft ? 1 : -1) * baseScale * farScale
+        santa.node.yScale = baseScale * farScale
+        santa.node.alpha = 0.54
         santaRoot.addChild(santa.node)
 
         let speed = CGFloat.random(in: 78...112) * santaSpeed.multiplier
@@ -1090,7 +1133,7 @@ final class SnowScene: SKScene {
         let progressDenominator = max(1, abs(santa.endX - santa.startX))
         let progress = min(1, max(0, abs(santa.node.position.x - santa.startX) / progressDenominator))
         let closeness = max(0, sin(progress * .pi)) * santa.depthPeak
-        let perspectiveScale = 0.52 + closeness * 0.78
+        let perspectiveScale = santaPerspectiveScale(for: closeness)
         let speedPerspective = 0.74 + closeness * 0.34
         let windPush = CGFloat(directedWindStrength) * 18
         santa.node.position.x += (santa.direction * santa.speed * speedPerspective + windPush) * deltaTime
@@ -1119,7 +1162,7 @@ final class SnowScene: SKScene {
         let facing = santa.direction >= 0 ? 1.0 : -1.0
         santa.node.xScale = facing * santa.baseScale * perspectiveScale
         santa.node.yScale = santa.baseScale * perspectiveScale
-        santa.node.alpha = 0.58 + closeness * 0.42
+        santa.node.alpha = 0.5 + closeness * 0.36
         santa.node.zRotation = max(-0.08, min(0.08, santa.verticalVelocity * 0.0025))
         santa.node.zPosition = santaOverlapsMoon(santa.node) || closeness > 0.48 ? 24 : 6
 
@@ -1186,6 +1229,10 @@ final class SnowScene: SKScene {
             return min(yRange.upperBound, max(yRange.lowerBound, moonPosition.y + CGFloat.random(in: -54...50)))
         }
         return CGFloat.random(in: yRange.lowerBound...yRange.upperBound)
+    }
+
+    private func santaPerspectiveScale(for closeness: CGFloat) -> CGFloat {
+        0.58 + min(1, max(0, closeness)) * 0.22
     }
 
     private func santaYRange() -> ClosedRange<CGFloat> {
@@ -1264,11 +1311,11 @@ final class SnowScene: SKScene {
     }
 
     private func santaSpriteScale(for textureSize: CGSize) -> CGFloat {
-        let targetHeight = min(72, max(44, size.height * 0.075))
+        let targetHeight = min(48, max(34, size.height * 0.052))
         guard textureSize.height > 0 else {
-            return 2.4
+            return 1.2
         }
-        return min(5.0, max(1.8, targetHeight / textureSize.height))
+        return min(1.9, max(0.95, targetHeight / textureSize.height))
     }
 
     private func santaFallbackProfile(_ style: SantaStyle) -> Int {
@@ -1429,30 +1476,58 @@ final class SnowScene: SKScene {
             return
         }
 
-        let baseY = min(34, max(14, size.height * 0.035))
         if areTreesEnabled {
-            addTree(at: CGPoint(x: size.width * 0.12, y: baseY), scale: 0.9)
-            addTree(at: CGPoint(x: size.width * 0.82, y: baseY), scale: 0.7)
-            addScenerySprite(named: "snowtree.xpm", at: CGPoint(x: size.width * 0.05, y: baseY), scale: 0.42)
-            addScenerySprite(named: "extratree.xpm", at: CGPoint(x: size.width * 0.92, y: baseY), scale: 0.46)
-            addScenerySprite(named: "tannenbaum.xpm", at: CGPoint(x: size.width * 0.62, y: baseY), scale: 0.44)
-            addScenerySprite(named: "tree-1_100px.xpm", at: CGPoint(x: size.width * 0.72, y: baseY), scale: 0.36)
+            addRandomTrees()
         }
         if isHouseEnabled {
-            addScenerySprite(named: "huis4.xpm", at: CGPoint(x: size.width * 0.5, y: baseY + 2), scale: 0.5)
-        }
-        if isReindeerEnabled {
-            addScenerySprite(named: "rendier.xpm", at: CGPoint(x: size.width * 0.34, y: baseY + 3), scale: 0.48)
-        }
-        if isMooseEnabled {
-            addScenerySprite(named: "eland.xpm", at: CGPoint(x: size.width * 0.76, y: baseY + 3), scale: 0.45)
+            addScenerySprite(named: "huis4.xpm", at: randomObjectPoint(yBias: 0.12), scale: 0.5)
         }
         if areGiftsEnabled {
-            addGift(at: CGPoint(x: size.width * 0.2, y: baseY + 2), color: .systemRed)
-            addGift(at: CGPoint(x: size.width * 0.24, y: baseY + 1), color: .systemBlue)
+            let giftCount = max(1, Int((2.0 * objectAmount.multiplier).rounded()))
+            for index in 0..<giftCount {
+                addGift(at: randomObjectPoint(yBias: 0.05), color: index.isMultiple(of: 2) ? .systemRed : .systemBlue)
+            }
         }
         setupGroundAgentIfNeeded()
         setupMovingPolarBearIfNeeded()
+        setupMovingAnimalsIfNeeded()
+    }
+
+    private func addRandomTrees() {
+        let treeAssets: [(String?, CGFloat)] = [
+            (nil, 0.9),
+            (nil, 0.7),
+            ("snowtree.xpm", 0.42),
+            ("extratree.xpm", 0.46),
+            ("tannenbaum.xpm", 0.44),
+            ("tree-1_100px.xpm", 0.36)
+        ]
+        let count = max(2, Int((CGFloat(treeAssets.count) * objectAmount.multiplier).rounded()))
+        for index in 0..<min(count, treeAssets.count) {
+            let item = treeAssets[index]
+            let point = randomObjectPoint(yBias: CGFloat.random(in: 0.02...0.18))
+            if let name = item.0 {
+                addScenerySprite(named: name, at: point, scale: item.1)
+            } else {
+                addTree(at: point, scale: item.1)
+            }
+        }
+    }
+
+    private func randomObjectPoint(yBias: CGFloat = 0.0) -> CGPoint {
+        let xPadding = max(36, size.width * 0.06)
+        let yRange = safeObjectYRange()
+        let biasedLower = min(yRange.upperBound, yRange.lowerBound + (yRange.upperBound - yRange.lowerBound) * yBias)
+        return CGPoint(
+            x: CGFloat.random(in: xPadding...max(xPadding + 1, size.width - xPadding)),
+            y: CGFloat.random(in: biasedLower...yRange.upperBound)
+        )
+    }
+
+    private func safeObjectYRange() -> ClosedRange<CGFloat> {
+        let lower = max(56, size.height * 0.08)
+        let upper = min(size.height - 92, max(lower + 24, size.height * 0.42))
+        return lower...upper
     }
 
     private func updateGroundAgent(at currentTime: TimeInterval) {
@@ -1463,7 +1538,7 @@ final class SnowScene: SKScene {
             return
         }
         setupGroundAgentIfNeeded()
-        guard let groundAgent else {
+        guard let groundAgent, var target = groundAgentTarget else {
             lastAgentUpdateTime = 0
             return
         }
@@ -1489,7 +1564,21 @@ final class SnowScene: SKScene {
         case .sleep: speedMultiplier = 0
         }
 
-        groundAgent.position.x += groundAgentVelocity * speedMultiplier * deltaTime
+        var toTarget = CGVector(dx: target.x - groundAgent.position.x, dy: target.y - groundAgent.position.y)
+        var distance = max(1, hypot(toTarget.dx, toTarget.dy))
+        if distance < 24 || isNearWindowCliff(groundAgent.position) {
+            target = randomObjectPoint(yBias: CGFloat.random(in: 0.05...0.5))
+            groundAgentTarget = target
+            toTarget = CGVector(dx: target.x - groundAgent.position.x, dy: target.y - groundAgent.position.y)
+            distance = max(1, hypot(toTarget.dx, toTarget.dy))
+        }
+        let baseSpeed: CGFloat = CGFloat.random(in: 18...42) * speedMultiplier
+        let desired = CGVector(dx: toTarget.dx / distance * baseSpeed, dy: toTarget.dy / distance * baseSpeed)
+        let smoothing = min(1, deltaTime * 4.6)
+        groundAgentVelocityVector.dx += (desired.dx - groundAgentVelocityVector.dx) * smoothing
+        groundAgentVelocityVector.dy += (desired.dy - groundAgentVelocityVector.dy) * smoothing
+        groundAgent.position.x += groundAgentVelocityVector.dx * deltaTime
+        groundAgent.position.y += groundAgentVelocityVector.dy * deltaTime
         let bobAmplitude: CGFloat
         let bobSpeed: CGFloat
         switch groundAgentState {
@@ -1506,11 +1595,12 @@ final class SnowScene: SKScene {
             bobAmplitude = 0.35
             bobSpeed = 1.0
         }
-        groundAgent.position.y = groundAgentBaseY + abs(sin(CGFloat(currentTime) * bobSpeed + groundAgentBobPhase)) * bobAmplitude
-        if groundAgent.position.x < 28 || groundAgent.position.x > size.width - 28 || isNearWindowCliff(groundAgent.position) {
-            groundAgentVelocity *= -1
-            groundAgent.xScale *= -1
-            groundAgent.position.x = min(size.width - 28, max(28, groundAgent.position.x))
+        let yRange = safeObjectYRange()
+        groundAgent.position.x = min(size.width - 28, max(28, groundAgent.position.x))
+        groundAgent.position.y = min(yRange.upperBound, max(yRange.lowerBound, groundAgent.position.y))
+        groundAgent.position.y += abs(sin(CGFloat(currentTime) * bobSpeed + groundAgentBobPhase)) * bobAmplitude
+        if abs(groundAgentVelocityVector.dx) > 0.2 {
+            groundAgent.xScale = groundAgentVelocityVector.dx >= 0 ? abs(groundAgent.xScale) : -abs(groundAgent.xScale)
         }
 
         groundAgent.alpha = groundAgentState == .sleep ? 0.58 : 0.86
@@ -1521,10 +1611,11 @@ final class SnowScene: SKScene {
             return
         }
 
-        let baseY = min(34, max(14, size.height * 0.035)) + 4
         let agent = SKNode()
-        agent.position = CGPoint(x: size.width * 0.42, y: baseY)
-        groundAgentBaseY = baseY
+        agent.position = randomObjectPoint(yBias: 0.15)
+        groundAgentBaseY = agent.position.y
+        groundAgentTarget = randomObjectPoint(yBias: 0.35)
+        groundAgentVelocityVector = CGVector(dx: CGFloat.random(in: -12...12), dy: CGFloat.random(in: -10...10))
         groundAgentBobPhase = CGFloat.random(in: 0...(.pi * 2))
         addPolarBearBody(to: agent)
         agentRoot.addChild(agent)
@@ -1561,6 +1652,97 @@ final class SnowScene: SKScene {
             nextPawPrintTime: currentSceneTime + TimeInterval.random(in: 0.4...0.9),
             nextTargetTime: currentSceneTime + TimeInterval.random(in: 8...16)
         )
+    }
+
+    private func setupMovingAnimalsIfNeeded() {
+        guard isSceneryEnabled, movingAnimals.isEmpty, size.width > 120, size.height > 120 else {
+            return
+        }
+        if isReindeerEnabled {
+            addMovingAnimal(named: "rendier.xpm", scale: 0.48)
+        }
+        if isMooseEnabled {
+            addMovingAnimal(named: "eland.xpm", scale: 0.45)
+        }
+    }
+
+    private func addMovingAnimal(named name: String, scale: CGFloat) {
+        guard let texture = XPMTextureCache.shared.texture(named: name) else {
+            return
+        }
+        let sprite = SKSpriteNode(texture: texture)
+        sprite.name = "movingAnimal"
+        sprite.anchorPoint = CGPoint(x: 0.5, y: 0)
+        sprite.setScale(scale)
+        sprite.alpha = 0.9
+        let start = randomObjectPoint(yBias: CGFloat.random(in: 0.1...0.45))
+        let target = randomObjectPoint(yBias: CGFloat.random(in: 0.1...0.55))
+        let directionFlip: CGFloat = name == "eland.xpm" ? -1 : 1
+        sprite.position = start
+        sprite.xScale = (target.x >= start.x ? abs(sprite.xScale) : -abs(sprite.xScale)) * directionFlip
+        agentRoot.addChild(sprite)
+        movingAnimals.append(MovingAnimal(
+            node: sprite,
+            target: target,
+            velocity: CGVector(dx: CGFloat.random(in: -16...16), dy: CGFloat.random(in: -12...12)),
+            baseScale: scale,
+            directionFlip: directionFlip,
+            bobPhase: CGFloat.random(in: 0...(.pi * 2)),
+            nextTargetTime: currentSceneTime + TimeInterval.random(in: 4...10)
+        ))
+    }
+
+    private func updateMovingAnimals(at currentTime: TimeInterval) {
+        guard isSceneryEnabled else {
+            movingAnimals.removeAll()
+            agentRoot.children.filter { $0.name == "movingAnimal" }.forEach { $0.removeFromParent() }
+            lastMovingAnimalUpdateTime = 0
+            return
+        }
+        setupMovingAnimalsIfNeeded()
+        guard !movingAnimals.isEmpty else {
+            lastMovingAnimalUpdateTime = 0
+            return
+        }
+
+        let deltaTime: CGFloat
+        if lastMovingAnimalUpdateTime > 0 {
+            deltaTime = CGFloat(max(0, min(currentTime - lastMovingAnimalUpdateTime, 1.0 / 20.0)))
+        } else {
+            deltaTime = 1.0 / 60.0
+        }
+        lastMovingAnimalUpdateTime = currentTime
+
+        let yRange = safeObjectYRange()
+        for index in movingAnimals.indices {
+            var animal = movingAnimals[index]
+            var toTarget = CGVector(dx: animal.target.x - animal.node.position.x, dy: animal.target.y - animal.node.position.y)
+            var distance = max(1, hypot(toTarget.dx, toTarget.dy))
+            if distance < 24 || currentTime >= animal.nextTargetTime {
+                animal.target = randomObjectPoint(yBias: CGFloat.random(in: 0.08...0.58))
+                animal.nextTargetTime = currentTime + TimeInterval.random(in: 3.5...9.5)
+                toTarget = CGVector(dx: animal.target.x - animal.node.position.x, dy: animal.target.y - animal.node.position.y)
+                distance = max(1, hypot(toTarget.dx, toTarget.dy))
+            }
+
+            let speed = CGFloat.random(in: 18...54)
+            let desired = CGVector(dx: toTarget.dx / distance * speed, dy: toTarget.dy / distance * speed)
+            let smoothing = min(1, deltaTime * CGFloat.random(in: 3.2...6.8))
+            animal.velocity.dx += (desired.dx - animal.velocity.dx) * smoothing
+            animal.velocity.dy += (desired.dy - animal.velocity.dy) * smoothing
+            animal.node.position.x += animal.velocity.dx * deltaTime
+            animal.node.position.y += animal.velocity.dy * deltaTime
+            animal.node.position.x = min(size.width - 42, max(42, animal.node.position.x))
+            animal.node.position.y = min(yRange.upperBound, max(yRange.lowerBound, animal.node.position.y))
+            animal.node.position.y += sin(CGFloat(currentTime) * 4.8 + animal.bobPhase) * 0.9
+            let depth = polarBearDepth(at: animal.node.position.y, in: yRange)
+            let perspectiveScale = animal.baseScale * (0.82 + depth * 0.38)
+            animal.node.xScale = (animal.velocity.dx >= 0 ? abs(perspectiveScale) : -abs(perspectiveScale)) * animal.directionFlip
+            animal.node.yScale = perspectiveScale
+            animal.node.zPosition = 11 + depth * 10
+            animal.node.zRotation = max(-0.08, min(0.08, atan2(animal.velocity.dy, abs(animal.velocity.dx) + 0.01) * 0.18))
+            movingAnimals[index] = animal
+        }
     }
 
     private func updateMovingPolarBear(at currentTime: TimeInterval) {
@@ -1677,9 +1859,7 @@ final class SnowScene: SKScene {
     }
 
     private func polarBearYRange() -> ClosedRange<CGFloat> {
-        let lower = max(42, size.height * 0.08)
-        let upper = min(size.height * 0.42, max(lower + 28, size.height - 96))
-        return lower...upper
+        safeObjectYRange()
     }
 
     private func polarBearDepth(at y: CGFloat, in range: ClosedRange<CGFloat>) -> CGFloat {

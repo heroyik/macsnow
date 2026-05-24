@@ -80,6 +80,10 @@ final class DisplayController {
         scene.setGiftsEnabled(enabled)
     }
 
+    func setObjectAmount(_ amount: ObjectAmount) {
+        scene.setObjectAmount(amount)
+    }
+
     func setSantaOptions(style: SantaStyle, speed: SantaSpeed, scale: SantaScale, isRudolphEnabled: Bool) {
         scene.setSantaOptions(style: style, speed: speed, scale: scale, isRudolphEnabled: isRudolphEnabled)
     }

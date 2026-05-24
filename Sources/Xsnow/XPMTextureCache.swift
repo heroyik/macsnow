@@ -46,7 +46,11 @@ final class XPMTextureCache {
     private func pixmapURL(named name: String) -> URL? {
         let fileManager = FileManager.default
         let cwd = URL(fileURLWithPath: fileManager.currentDirectoryPath)
-        let candidates = [
+        var candidates: [URL] = []
+        if let resourceURL = Bundle.main.resourceURL {
+            candidates.append(resourceURL.appendingPathComponent("Pixmaps/\(name)"))
+        }
+        candidates += [
             cwd.appendingPathComponent("xsnow-org/xsnow-3.9.1/src/Pixmaps/\(name)"),
             cwd.appendingPathComponent("../xsnow-org/xsnow-3.9.1/src/Pixmaps/\(name)"),
             URL(fileURLWithPath: "/Users/nick/proj/macsnow/xsnow-org/xsnow-3.9.1/src/Pixmaps/\(name)")

@@ -227,6 +227,28 @@ enum AccumulationStyle: String, Codable, CaseIterable {
     }
 }
 
+enum ObjectAmount: String, Codable, CaseIterable {
+    case low
+    case normal
+    case high
+
+    var title: String {
+        switch self {
+        case .low: "Low"
+        case .normal: "Normal"
+        case .high: "High"
+        }
+    }
+
+    var multiplier: CGFloat {
+        switch self {
+        case .low: 0.6
+        case .normal: 1.0
+        case .high: 1.6
+        }
+    }
+}
+
 struct XsnowDisplaySettings: Codable {
     var isEnabled: Bool = true
 }
@@ -253,6 +275,7 @@ struct XsnowGlobalSettings: Codable {
     var isPolarBearEnabled: Bool = true
     var isGroundAgentEnabled: Bool = true
     var areGiftsEnabled: Bool = true
+    var objectAmount: ObjectAmount = .normal
     var santaStyle: SantaStyle = .big
     var santaSpeed: SantaSpeed = .normal
     var santaScale: SantaScale = .normal
@@ -291,6 +314,7 @@ struct XsnowGlobalSettings: Codable {
         isPolarBearEnabled = try container.decodeIfPresent(Bool.self, forKey: .isPolarBearEnabled) ?? true
         isGroundAgentEnabled = try container.decodeIfPresent(Bool.self, forKey: .isGroundAgentEnabled) ?? true
         areGiftsEnabled = try container.decodeIfPresent(Bool.self, forKey: .areGiftsEnabled) ?? true
+        objectAmount = try container.decodeIfPresent(ObjectAmount.self, forKey: .objectAmount) ?? .normal
         santaStyle = try container.decodeIfPresent(SantaStyle.self, forKey: .santaStyle) ?? .big
         santaSpeed = try container.decodeIfPresent(SantaSpeed.self, forKey: .santaSpeed) ?? .normal
         santaScale = try container.decodeIfPresent(SantaScale.self, forKey: .santaScale) ?? .normal
