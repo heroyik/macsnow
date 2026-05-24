@@ -2,7 +2,7 @@
 
 Xsnow for macOS is a lightweight menu bar prototype that renders falling snow across connected macOS displays without blocking normal app interaction.
 
-The project is currently at **main implementation 1.20 start**. The repository version is `1.20.0`, stored in `VERSION`. The repository includes product requirements, architecture notes, an MVP spec, an MVP implementation plan, validation notes, distribution notes, performance notes, and a SwiftPM-based AppKit/SpriteKit prototype.
+The project is currently at **main implementation 1.21**. The repository version is `1.21.43`, stored in `VERSION`. The repository includes product requirements, architecture notes, an MVP spec, an MVP implementation plan, validation notes, distribution notes, performance notes, and a SwiftPM-based AppKit/SpriteKit prototype.
 
 ## Current Status
 
@@ -45,6 +45,7 @@ Completed so far:
 - Replaced the Santa/sleigh asset with the Xsnow-inspired generated image and changed Santa motion to a natural snowy mountain ride path.
 - Replaced the Santa/sleigh asset with a more classic Xsnow-style retro sprite asset.
 - Removed Santa/sleigh display logic and the bundled Santa/sleigh image asset.
+- Added GitHub Release download and install instructions.
 - Verified `swift build` succeeds.
 
 ## MVP 0.1 Scope
@@ -138,6 +139,24 @@ bash Scripts/build_app_bundle.sh
 ```
 
 The generated bundle is written to `dist/Xsnow.app`.
+
+## Install from GitHub Release
+
+Use the GitHub Release when you want to install the packaged app without building it from source.
+
+1. Open the latest release page:
+   <https://github.com/heroyik/macsnow/releases/latest>
+2. In the release page, expand `Assets`.
+3. Download the app archive named like `Xsnow-<version>.zip`, for example `Xsnow-1.21.42.zip`.
+4. Open the downloaded zip file. macOS will extract `Xsnow.app`.
+5. Move `Xsnow.app` to `/Applications`.
+6. Launch `Xsnow.app` from Finder or Spotlight.
+7. Because the current release is an unsigned prototype, macOS may block the first launch. If that happens, open `System Settings` -> `Privacy & Security`, find the blocked `Xsnow.app` message, and choose `Open Anyway`. You can also Control-click `Xsnow.app`, choose `Open`, then confirm the launch prompt.
+8. After launch, Xsnow runs as a menu bar app. Use the snowflake menu bar item to start or stop snow, adjust density, wind, display options, accumulation behavior, and quit the app.
+
+To update Xsnow, quit the running app from the menu bar, download the newest `Xsnow-<version>.zip` from GitHub Releases, extract it, and replace the existing `/Applications/Xsnow.app`.
+
+To uninstall Xsnow, quit it from the menu bar and delete `/Applications/Xsnow.app`. User preferences are stored by macOS in the app defaults database and can be removed later if needed.
 
 ## Validation Status
 
