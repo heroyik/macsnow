@@ -1068,7 +1068,6 @@ final class SnowScene: SKScene {
             return
         }
 
-        nextSantaTime = currentTime + TimeInterval.random(in: 30...120)
         spawnSanta()
     }
 
@@ -1187,6 +1186,7 @@ final class SnowScene: SKScene {
             || (santa.direction < 0 && santa.node.position.x < -margin) {
             santa.node.removeFromParent()
             activeSanta = nil
+            nextSantaTime = currentTime + TimeInterval.random(in: 3...10)
         }
     }
 
