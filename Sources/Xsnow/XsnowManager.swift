@@ -9,6 +9,9 @@ final class XsnowManager {
     private var settings: XsnowGlobalSettings
     private var displayControllers: [DisplayController] = []
     private var scannedWindows: [WindowSnapshot] = []
+    private var collisionEdgeCount = 0
+    private var isWindowScannerRunning = false
+    private var powerSaveTimer: Timer?
 
     init() {
         displayDetector = DisplayDetector()
@@ -27,6 +30,75 @@ final class XsnowManager {
         statusMenuController.onAdjustWind = { [weak self] windStrength in
             self?.setWindStrength(windStrength)
         }
+        statusMenuController.onSelectWindDirection = { [weak self] direction in
+            self?.setWindDirection(direction)
+        }
+        statusMenuController.onSelectVisualScale = { [weak self] scale in
+            self?.setVisualScale(scale)
+        }
+        statusMenuController.onSelectSnowColorMode = { [weak self] mode in
+            self?.setSnowColorMode(mode)
+        }
+        statusMenuController.onToggleCelestialEffects = { [weak self] in
+            self?.setCelestialEffectsEnabled(!(self?.settings.isCelestialEffectsEnabled ?? true))
+        }
+        statusMenuController.onToggleAurora = { [weak self] in self?.setAuroraEnabled(!(self?.settings.isAuroraEnabled ?? true)) }
+        statusMenuController.onToggleMoon = { [weak self] in self?.setMoonEnabled(!(self?.settings.isMoonEnabled ?? true)) }
+        statusMenuController.onToggleStars = { [weak self] in self?.setStarsEnabled(!(self?.settings.areStarsEnabled ?? true)) }
+        statusMenuController.onToggleMeteors = { [weak self] in self?.setMeteorsEnabled(!(self?.settings.areMeteorsEnabled ?? true)) }
+        statusMenuController.onToggleBirds = { [weak self] in
+            self?.setBirdsEnabled(!(self?.settings.areBirdsEnabled ?? true))
+        }
+        statusMenuController.onToggleSanta = { [weak self] in
+            self?.setSantaEnabled(!(self?.settings.isSantaEnabled ?? true))
+        }
+        statusMenuController.onToggleScenery = { [weak self] in
+            self?.setSceneryEnabled(!(self?.settings.isSceneryEnabled ?? true))
+        }
+        statusMenuController.onToggleTrees = { [weak self] in self?.setTreesEnabled(!(self?.settings.areTreesEnabled ?? true)) }
+        statusMenuController.onToggleHouse = { [weak self] in self?.setHouseEnabled(!(self?.settings.isHouseEnabled ?? true)) }
+        statusMenuController.onToggleReindeer = { [weak self] in self?.setReindeerEnabled(!(self?.settings.isReindeerEnabled ?? true)) }
+        statusMenuController.onToggleMoose = { [weak self] in self?.setMooseEnabled(!(self?.settings.isMooseEnabled ?? true)) }
+        statusMenuController.onTogglePolarBear = { [weak self] in self?.setPolarBearEnabled(!(self?.settings.isPolarBearEnabled ?? true)) }
+        statusMenuController.onToggleGroundAgent = { [weak self] in
+            self?.setGroundAgentEnabled(!(self?.settings.isGroundAgentEnabled ?? true))
+        }
+        statusMenuController.onToggleGifts = { [weak self] in
+            self?.setGiftsEnabled(!(self?.settings.areGiftsEnabled ?? true))
+        }
+        statusMenuController.onSelectSantaStyle = { [weak self] style in
+            self?.setSantaStyle(style)
+        }
+        statusMenuController.onSelectSantaSpeed = { [weak self] speed in
+            self?.setSantaSpeed(speed)
+        }
+        statusMenuController.onSelectSantaScale = { [weak self] scale in
+            self?.setSantaScale(scale)
+        }
+        statusMenuController.onToggleRudolph = { [weak self] in
+            self?.setRudolphEnabled(!(self?.settings.isRudolphEnabled ?? true))
+        }
+        statusMenuController.onToggleAccumulation = { [weak self] in
+            self?.setAccumulationEnabled(!(self?.settings.isAccumulationEnabled ?? true))
+        }
+        statusMenuController.onSelectAccumulationSpillMode = { [weak self] mode in
+            self?.setAccumulationSpillMode(mode)
+        }
+        statusMenuController.onSelectAccumulationRate = { [weak self] rate in
+            self?.setAccumulationRate(rate)
+        }
+        statusMenuController.onSelectAccumulationStyle = { [weak self] style in
+            self?.setAccumulationStyle(style)
+        }
+        statusMenuController.onClearAccumulation = { [weak self] in
+            self?.clearAccumulation()
+        }
+        statusMenuController.onSelectOverlayLevel = { [weak self] mode in
+            self?.setOverlayLevelMode(mode)
+        }
+        statusMenuController.onToggleEdgeDebug = { [weak self] in
+            self?.setEdgeDebugEnabled(!(self?.settings.isEdgeDebugEnabled ?? false))
+        }
         statusMenuController.onToggleDisplay = { [weak self] displayID in
             self?.toggleDisplay(displayID)
         }
@@ -38,6 +110,7 @@ final class XsnowManager {
         }
         windowLayoutScanner.onSnapshot = { [weak self] windows in
             self?.scannedWindows = windows
+            self?.applyWindowSnapshotsToDisplays()
             self?.updateMenuState()
         }
     }
@@ -45,16 +118,48 @@ final class XsnowManager {
     func start() {
         statusMenuController.configure(isSnowEnabled: settings.isSnowEnabled)
         statusMenuController.setDensity(settings.density)
+        statusMenuController.setWindStrength(settings.windStrength)
+        statusMenuController.setWindDirection(settings.windDirection)
+        statusMenuController.setVisualScale(settings.visualScale)
+        statusMenuController.setSnowColorMode(settings.snowColorMode)
+        statusMenuController.setCelestialEffectsEnabled(settings.isCelestialEffectsEnabled)
+        statusMenuController.setAuroraEnabled(settings.isAuroraEnabled)
+        statusMenuController.setMoonEnabled(settings.isMoonEnabled)
+        statusMenuController.setStarsEnabled(settings.areStarsEnabled)
+        statusMenuController.setMeteorsEnabled(settings.areMeteorsEnabled)
+        statusMenuController.setBirdsEnabled(settings.areBirdsEnabled)
+        statusMenuController.setSantaEnabled(settings.isSantaEnabled)
+        statusMenuController.setSceneryEnabled(settings.isSceneryEnabled)
+        statusMenuController.setTreesEnabled(settings.areTreesEnabled)
+        statusMenuController.setHouseEnabled(settings.isHouseEnabled)
+        statusMenuController.setReindeerEnabled(settings.isReindeerEnabled)
+        statusMenuController.setMooseEnabled(settings.isMooseEnabled)
+        statusMenuController.setPolarBearEnabled(settings.isPolarBearEnabled)
+        statusMenuController.setGroundAgentEnabled(settings.isGroundAgentEnabled)
+        statusMenuController.setGiftsEnabled(settings.areGiftsEnabled)
+        statusMenuController.setSantaStyle(settings.santaStyle)
+        statusMenuController.setSantaSpeed(settings.santaSpeed)
+        statusMenuController.setSantaScale(settings.santaScale)
+        statusMenuController.setRudolphEnabled(settings.isRudolphEnabled)
+        statusMenuController.setAccumulationEnabled(settings.isAccumulationEnabled)
+        statusMenuController.setAccumulationSpillMode(settings.accumulationSpillMode)
+        statusMenuController.setAccumulationRate(settings.accumulationRate)
+        statusMenuController.setAccumulationStyle(settings.accumulationStyle)
+        statusMenuController.setOverlayLevelMode(settings.overlayLevelMode)
+        statusMenuController.setEdgeDebugEnabled(settings.isEdgeDebugEnabled)
         displayDetector.start()
-        windowLayoutScanner.start()
         observePowerNotifications()
+        startPowerSaveMonitor()
         rebuildDisplayControllers()
+        updateWindowScannerState()
     }
 
     func stop() {
         NotificationCenter.default.removeObserver(self)
         NSWorkspace.shared.notificationCenter.removeObserver(self)
         displayDetector.stop()
+        powerSaveTimer?.invalidate()
+        powerSaveTimer = nil
         windowLayoutScanner.stop()
         displayControllers.forEach { $0.close() }
         displayControllers.removeAll()
@@ -65,6 +170,8 @@ final class XsnowManager {
         settingsStore.save(settings)
         statusMenuController.setSnowEnabled(enabled)
         applySettingsToDisplays()
+        updateWindowScannerState()
+        updateMenuState()
     }
 
     private func rebuildDisplayControllers() {
@@ -76,7 +183,9 @@ final class XsnowManager {
             return controller
         }
         applySettingsToDisplays()
+        applyWindowSnapshotsToDisplays()
         updateMenuState()
+        updateWindowScannerState()
     }
 
     private func setDensity(_ density: SnowDensity) {
@@ -90,7 +199,159 @@ final class XsnowManager {
     private func setWindStrength(_ windStrength: Double) {
         settings.windStrength = windStrength
         settingsStore.save(settings)
+        statusMenuController.setWindStrength(windStrength)
         applySettingsToDisplays()
+    }
+
+    private func setWindDirection(_ direction: WindDirection) {
+        settings.windDirection = direction
+        settingsStore.save(settings)
+        statusMenuController.setWindDirection(direction)
+        applySettingsToDisplays()
+    }
+
+    private func setVisualScale(_ scale: VisualScale) {
+        settings.visualScale = scale
+        settingsStore.save(settings)
+        statusMenuController.setVisualScale(scale)
+        applySettingsToDisplays()
+    }
+
+    private func setSnowColorMode(_ mode: SnowColorMode) {
+        settings.snowColorMode = mode
+        settingsStore.save(settings)
+        statusMenuController.setSnowColorMode(mode)
+        applySettingsToDisplays()
+    }
+
+    private func setCelestialEffectsEnabled(_ enabled: Bool) {
+        settings.isCelestialEffectsEnabled = enabled
+        settingsStore.save(settings)
+        statusMenuController.setCelestialEffectsEnabled(enabled)
+        applySettingsToDisplays()
+    }
+
+    private func setAuroraEnabled(_ enabled: Bool) { settings.isAuroraEnabled = enabled; settingsStore.save(settings); statusMenuController.setAuroraEnabled(enabled); applySettingsToDisplays() }
+    private func setMoonEnabled(_ enabled: Bool) { settings.isMoonEnabled = enabled; settingsStore.save(settings); statusMenuController.setMoonEnabled(enabled); applySettingsToDisplays() }
+    private func setStarsEnabled(_ enabled: Bool) { settings.areStarsEnabled = enabled; settingsStore.save(settings); statusMenuController.setStarsEnabled(enabled); applySettingsToDisplays() }
+    private func setMeteorsEnabled(_ enabled: Bool) { settings.areMeteorsEnabled = enabled; settingsStore.save(settings); statusMenuController.setMeteorsEnabled(enabled); applySettingsToDisplays() }
+
+    private func setBirdsEnabled(_ enabled: Bool) {
+        settings.areBirdsEnabled = enabled
+        settingsStore.save(settings)
+        statusMenuController.setBirdsEnabled(enabled)
+        applySettingsToDisplays()
+    }
+
+    private func setSantaEnabled(_ enabled: Bool) {
+        settings.isSantaEnabled = enabled
+        settingsStore.save(settings)
+        statusMenuController.setSantaEnabled(enabled)
+        applySettingsToDisplays()
+    }
+
+    private func setSceneryEnabled(_ enabled: Bool) {
+        settings.isSceneryEnabled = enabled
+        settingsStore.save(settings)
+        statusMenuController.setSceneryEnabled(enabled)
+        applySettingsToDisplays()
+    }
+
+    private func setTreesEnabled(_ enabled: Bool) { settings.areTreesEnabled = enabled; settingsStore.save(settings); statusMenuController.setTreesEnabled(enabled); applySettingsToDisplays() }
+    private func setHouseEnabled(_ enabled: Bool) { settings.isHouseEnabled = enabled; settingsStore.save(settings); statusMenuController.setHouseEnabled(enabled); applySettingsToDisplays() }
+    private func setReindeerEnabled(_ enabled: Bool) { settings.isReindeerEnabled = enabled; settingsStore.save(settings); statusMenuController.setReindeerEnabled(enabled); applySettingsToDisplays() }
+    private func setMooseEnabled(_ enabled: Bool) { settings.isMooseEnabled = enabled; settingsStore.save(settings); statusMenuController.setMooseEnabled(enabled); applySettingsToDisplays() }
+    private func setPolarBearEnabled(_ enabled: Bool) { settings.isPolarBearEnabled = enabled; settingsStore.save(settings); statusMenuController.setPolarBearEnabled(enabled); applySettingsToDisplays() }
+
+    private func setGroundAgentEnabled(_ enabled: Bool) {
+        settings.isGroundAgentEnabled = enabled
+        settingsStore.save(settings)
+        statusMenuController.setGroundAgentEnabled(enabled)
+        applySettingsToDisplays()
+    }
+
+    private func setGiftsEnabled(_ enabled: Bool) {
+        settings.areGiftsEnabled = enabled
+        settingsStore.save(settings)
+        statusMenuController.setGiftsEnabled(enabled)
+        applySettingsToDisplays()
+    }
+
+    private func setSantaStyle(_ style: SantaStyle) {
+        settings.santaStyle = style
+        settingsStore.save(settings)
+        statusMenuController.setSantaStyle(style)
+        applySettingsToDisplays()
+    }
+
+    private func setSantaSpeed(_ speed: SantaSpeed) {
+        settings.santaSpeed = speed
+        settingsStore.save(settings)
+        statusMenuController.setSantaSpeed(speed)
+        applySettingsToDisplays()
+    }
+
+    private func setSantaScale(_ scale: SantaScale) {
+        settings.santaScale = scale
+        settingsStore.save(settings)
+        statusMenuController.setSantaScale(scale)
+        applySettingsToDisplays()
+    }
+
+    private func setRudolphEnabled(_ enabled: Bool) {
+        settings.isRudolphEnabled = enabled
+        settingsStore.save(settings)
+        statusMenuController.setRudolphEnabled(enabled)
+        applySettingsToDisplays()
+    }
+
+    private func setAccumulationEnabled(_ enabled: Bool) {
+        settings.isAccumulationEnabled = enabled
+        settingsStore.save(settings)
+        statusMenuController.setAccumulationEnabled(enabled)
+        applySettingsToDisplays()
+        updateWindowScannerState()
+        updateMenuState()
+    }
+
+    private func setAccumulationSpillMode(_ mode: AccumulationSpillMode) {
+        settings.accumulationSpillMode = mode
+        settings.isAccumulationSpillEnabled = mode != .off
+        settingsStore.save(settings)
+        statusMenuController.setAccumulationSpillMode(mode)
+        applySettingsToDisplays()
+    }
+
+    private func setAccumulationRate(_ rate: AccumulationRate) {
+        settings.accumulationRate = rate
+        settingsStore.save(settings)
+        statusMenuController.setAccumulationRate(rate)
+        applySettingsToDisplays()
+    }
+
+    private func setAccumulationStyle(_ style: AccumulationStyle) {
+        settings.accumulationStyle = style
+        settingsStore.save(settings)
+        statusMenuController.setAccumulationStyle(style)
+        applySettingsToDisplays()
+    }
+
+    private func setOverlayLevelMode(_ mode: OverlayLevelMode) {
+        settings.overlayLevelMode = mode
+        settingsStore.save(settings)
+        statusMenuController.setOverlayLevelMode(mode)
+        applySettingsToDisplays()
+    }
+
+    private func setEdgeDebugEnabled(_ enabled: Bool) {
+        settings.isEdgeDebugEnabled = enabled
+        settingsStore.save(settings)
+        statusMenuController.setEdgeDebugEnabled(enabled)
+        applySettingsToDisplays()
+    }
+
+    private func clearAccumulation() {
+        displayControllers.forEach { $0.clearAccumulation() }
     }
 
     private func toggleDisplay(_ displayID: String) {
@@ -106,8 +367,107 @@ final class XsnowManager {
         for controller in displayControllers {
             let displaySettings = settings.perDisplay[controller.identity.id] ?? XsnowDisplaySettings()
             let enabled = settings.isSnowEnabled && displaySettings.isEnabled
-            controller.apply(density: settings.density, windStrength: settings.windStrength)
+            controller.apply(
+                density: settings.density,
+                windStrength: settings.windStrength,
+                windDirection: settings.windDirection
+            )
+            controller.setVisualScale(settings.visualScale)
+            controller.setSnowColorMode(settings.snowColorMode)
+            controller.setCelestialEffectsEnabled(settings.isCelestialEffectsEnabled)
+            controller.setCelestialItemOptions(
+                aurora: settings.isAuroraEnabled,
+                moon: settings.isMoonEnabled,
+                stars: settings.areStarsEnabled,
+                meteors: settings.areMeteorsEnabled
+            )
+            controller.setBirdsEnabled(settings.areBirdsEnabled)
+            controller.setSantaEnabled(settings.isSantaEnabled)
+            controller.setSceneryEnabled(settings.isSceneryEnabled)
+            controller.setSceneryItemOptions(
+                trees: settings.areTreesEnabled,
+                house: settings.isHouseEnabled,
+                reindeer: settings.isReindeerEnabled,
+                moose: settings.isMooseEnabled,
+                polarBear: settings.isPolarBearEnabled
+            )
+            controller.setGroundAgentEnabled(settings.isGroundAgentEnabled)
+            controller.setGiftsEnabled(settings.areGiftsEnabled)
+            controller.setSantaOptions(
+                style: settings.santaStyle,
+                speed: settings.santaSpeed,
+                scale: settings.santaScale,
+                isRudolphEnabled: settings.isRudolphEnabled
+            )
+            controller.setOverlayLevelMode(settings.overlayLevelMode)
+            controller.setAccumulationEnabled(settings.isAccumulationEnabled)
+            controller.setAccumulationSpillMode(settings.accumulationSpillMode)
+            controller.setAccumulationRate(settings.accumulationRate)
+            controller.setAccumulationStyle(settings.accumulationStyle)
+            controller.setEdgeDebugEnabled(settings.isEdgeDebugEnabled)
             controller.setSnowEnabled(enabled)
+        }
+        applyFullscreenPowerSave()
+    }
+
+    private func applyWindowSnapshotsToDisplays() {
+        guard shouldRunWindowScanner else {
+            clearWindowTracking()
+            return
+        }
+
+        let desktopFrame = NSScreen.screens.reduce(CGRect.null) { partial, screen in
+            partial.union(screen.frame)
+        }
+        guard !desktopFrame.isNull else {
+            collisionEdgeCount = 0
+            return
+        }
+
+        collisionEdgeCount = 0
+        for controller in displayControllers {
+            collisionEdgeCount += controller.updateWindowSnapshots(scannedWindows, desktopFrame: desktopFrame)
+        }
+    }
+
+    private var shouldRunWindowScanner: Bool {
+        settings.isSnowEnabled
+    }
+
+    private func updateWindowScannerState() {
+        if shouldRunWindowScanner {
+            guard !isWindowScannerRunning else {
+                return
+            }
+            windowLayoutScanner.start()
+            isWindowScannerRunning = true
+        } else {
+            guard isWindowScannerRunning else {
+                clearWindowTracking()
+                return
+            }
+            windowLayoutScanner.stop()
+            isWindowScannerRunning = false
+            clearWindowTracking()
+        }
+    }
+
+    private func clearWindowTracking() {
+        scannedWindows.removeAll()
+        collisionEdgeCount = 0
+        displayControllers.forEach { $0.clearWindowTracking() }
+    }
+
+    private func startPowerSaveMonitor() {
+        powerSaveTimer?.invalidate()
+        powerSaveTimer = nil
+        applyFullscreenPowerSave()
+    }
+
+    private func applyFullscreenPowerSave() {
+        for controller in displayControllers {
+            let displaySettings = settings.perDisplay[controller.identity.id] ?? XsnowDisplaySettings()
+            controller.setSnowEnabled(settings.isSnowEnabled && displaySettings.isEnabled)
         }
     }
 
@@ -121,7 +481,8 @@ final class XsnowManager {
             overlayCount: displayControllers.count,
             activeSceneCount: displayControllers.filter(\.isSnowActive).count,
             density: settings.density,
-            scannedWindowCount: scannedWindows.count
+            scannedWindowCount: scannedWindows.count,
+            collisionEdgeCount: collisionEdgeCount
         )
     }
 
@@ -143,11 +504,16 @@ final class XsnowManager {
 
     @objc private func handleWillSleep() {
         displayControllers.forEach { $0.setSnowEnabled(false) }
+        windowLayoutScanner.stop()
+        isWindowScannerRunning = false
+        clearWindowTracking()
         updateMenuState()
     }
 
     @objc private func handleDidWake() {
         applySettingsToDisplays()
+        updateWindowScannerState()
+        applyFullscreenPowerSave()
         updateMenuState()
     }
 }

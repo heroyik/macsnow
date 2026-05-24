@@ -20,6 +20,17 @@ final class OverlayWindow: NSWindow {
         isReleasedWhenClosed = false
     }
 
+    func apply(levelMode: OverlayLevelMode) {
+        switch levelMode {
+        case .normal:
+            level = .mainMenu
+        case .fullscreenFriendly:
+            level = .floating
+        case .aboveMenu:
+            level = NSWindow.Level(rawValue: NSWindow.Level.mainMenu.rawValue + 1)
+        }
+    }
+
     override var canBecomeKey: Bool {
         false
     }

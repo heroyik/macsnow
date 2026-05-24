@@ -3,8 +3,11 @@ import CoreGraphics
 import Foundation
 
 struct WindowSnapshot: Equatable {
+    let windowID: CGWindowID
+    let ownerPID: pid_t
     let ownerName: String
     let bounds: CGRect
+    let order: Int
 }
 
 @MainActor
@@ -40,10 +43,15 @@ final class WindowLayoutScanner {
         }
 
         let appName = Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String
-        let snapshots = rawWindows.compactMap { info -> WindowSnapshot? in
+        let currentPID = ProcessInfo.processInfo.processIdentifier
+        let snapshots = rawWindows.enumerated().compactMap { order, info -> WindowSnapshot? in
             guard
+                let windowNumber = info[kCGWindowNumber as String] as? UInt32,
+                let ownerPID = info[kCGWindowOwnerPID as String] as? pid_t,
                 let ownerName = info[kCGWindowOwnerName as String] as? String,
+                ownerPID != currentPID,
                 ownerName != appName,
+                (info[kCGWindowLayer as String] as? Int) == 0,
                 let boundsDict = info[kCGWindowBounds as String] as? [String: Any],
                 let bounds = CGRect(dictionaryRepresentation: boundsDict as CFDictionary),
                 bounds.width >= minimumWindowSize,
@@ -52,7 +60,7 @@ final class WindowLayoutScanner {
                 return nil
             }
 
-            return WindowSnapshot(ownerName: ownerName, bounds: bounds)
+            return WindowSnapshot(windowID: CGWindowID(windowNumber), ownerPID: ownerPID, ownerName: ownerName, bounds: bounds, order: order)
         }
 
         onSnapshot?(Array(snapshots.prefix(20)))
