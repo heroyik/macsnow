@@ -41,13 +41,14 @@ final class StatusMenuController {
     private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
     private let menu = NSMenu()
     private let toggleItem = NSMenuItem(title: "Snow: On", action: #selector(toggleSnow), keyEquivalent: "")
+    private let visibilityMenu = NSMenu()
     private let celestialEffectsItem = NSMenuItem(title: "Celestial Effects", action: #selector(toggleCelestialEffects), keyEquivalent: "")
     private let auroraItem = NSMenuItem(title: "Aurora", action: #selector(toggleAurora), keyEquivalent: "")
     private let moonItem = NSMenuItem(title: "Moon", action: #selector(toggleMoon), keyEquivalent: "")
     private let starsItem = NSMenuItem(title: "Stars", action: #selector(toggleStars), keyEquivalent: "")
     private let meteorsItem = NSMenuItem(title: "Meteors", action: #selector(toggleMeteors), keyEquivalent: "")
     private let birdsItem = NSMenuItem(title: "Birds", action: #selector(toggleBirds), keyEquivalent: "")
-    private let santaItem = NSMenuItem(title: "Santa Flight: On", action: #selector(toggleSanta), keyEquivalent: "")
+    private let santaItem = NSMenuItem(title: "Santa Flight", action: #selector(toggleSanta), keyEquivalent: "")
     private let sceneryItem = NSMenuItem(title: "Scenery", action: #selector(toggleScenery), keyEquivalent: "")
     private let treesItem = NSMenuItem(title: "Trees", action: #selector(toggleTrees), keyEquivalent: "")
     private let houseItem = NSMenuItem(title: "House", action: #selector(toggleHouse), keyEquivalent: "")
@@ -135,21 +136,22 @@ final class StatusMenuController {
             windDirectionMenu.addItem(item)
         }
 
-        accumulationItem.target = self
-        menu.addItem(accumulationItem)
+        let visibilityRoot = NSMenuItem(title: "Visibility", action: nil, keyEquivalent: "")
+        menu.addItem(visibilityRoot)
+        menu.setSubmenu(visibilityMenu, for: visibilityRoot)
 
         celestialEffectsItem.target = self
-        menu.addItem(celestialEffectsItem)
+        visibilityMenu.addItem(celestialEffectsItem)
         for item in [auroraItem, moonItem, starsItem, meteorsItem] {
             item.target = self
-            menu.addItem(item)
+            visibilityMenu.addItem(item)
         }
 
         birdsItem.target = self
-        menu.addItem(birdsItem)
+        visibilityMenu.addItem(birdsItem)
 
         santaItem.target = self
-        menu.addItem(santaItem)
+        visibilityMenu.addItem(santaItem)
 
         let santaStyleRoot = NSMenuItem(title: "Santa Style", action: nil, keyEquivalent: "")
         menu.addItem(santaStyleRoot)
@@ -182,20 +184,20 @@ final class StatusMenuController {
         }
 
         rudolphItem.target = self
-        menu.addItem(rudolphItem)
+        visibilityMenu.addItem(rudolphItem)
 
         sceneryItem.target = self
-        menu.addItem(sceneryItem)
+        visibilityMenu.addItem(sceneryItem)
         for item in [treesItem, houseItem, reindeerItem, mooseItem, polarBearItem] {
             item.target = self
-            menu.addItem(item)
+            visibilityMenu.addItem(item)
         }
 
         groundAgentItem.target = self
-        menu.addItem(groundAgentItem)
+        visibilityMenu.addItem(groundAgentItem)
 
         giftsItem.target = self
-        menu.addItem(giftsItem)
+        visibilityMenu.addItem(giftsItem)
 
         let objectAmountRoot = NSMenuItem(title: "Object Amount", action: nil, keyEquivalent: "")
         menu.addItem(objectAmountRoot)
@@ -236,6 +238,9 @@ final class StatusMenuController {
             item.representedObject = style.rawValue
             accumulationStyleMenu.addItem(item)
         }
+
+        accumulationItem.target = self
+        visibilityMenu.addItem(accumulationItem)
 
         clearAccumulationItem.target = self
         menu.addItem(clearAccumulationItem)
@@ -324,7 +329,6 @@ final class StatusMenuController {
     }
 
     func setSantaEnabled(_ enabled: Bool) {
-        santaItem.title = enabled ? "Santa Flight: On" : "Santa Flight: Off"
         santaItem.state = enabled ? .on : .off
         rudolphItem.isEnabled = enabled
         for item in santaStyleMenu.items {
