@@ -81,7 +81,7 @@ final class StatusMenuController {
 
     func configure(isSnowEnabled: Bool) {
         statusItem.button?.title = "❄︎"
-        statusItem.button?.toolTip = "Xsnow"
+        statusItem.button?.toolTip = "MacSnow"
 
         toggleItem.target = self
         menu.addItem(toggleItem)
@@ -269,7 +269,7 @@ final class StatusMenuController {
         menu.addItem(versionItem)
         menu.addItem(.separator())
 
-        let quitItem = NSMenuItem(title: "Quit Xsnow", action: #selector(quit), keyEquivalent: "q")
+        let quitItem = NSMenuItem(title: "Quit MacSnow", action: #selector(quit), keyEquivalent: "q")
         quitItem.target = self
         menu.addItem(quitItem)
 

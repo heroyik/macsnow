@@ -3,16 +3,16 @@
 import PackageDescription
 
 let package = Package(
-    name: "Xsnow",
+    name: "MacSnow",
     platforms: [
         .macOS(.v14)
     ],
     products: [
-        .executable(name: "Xsnow", targets: ["Xsnow"])
+        .executable(name: "MacSnow", targets: ["MacSnow"])
     ],
     targets: [
         .executableTarget(
-            name: "Xsnow"
+            name: "MacSnow"
         )
     ]
 )

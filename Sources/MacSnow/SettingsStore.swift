@@ -249,11 +249,11 @@ enum ObjectAmount: String, Codable, CaseIterable {
     }
 }
 
-struct XsnowDisplaySettings: Codable {
+struct MacSnowDisplaySettings: Codable {
     var isEnabled: Bool = true
 }
 
-struct XsnowGlobalSettings: Codable {
+struct MacSnowGlobalSettings: Codable {
     var isSnowEnabled: Bool = true
     var density: SnowDensity = .normal
     var windStrength: Double = 0.2
@@ -287,7 +287,7 @@ struct XsnowGlobalSettings: Codable {
     var overlayLevelMode: OverlayLevelMode = .normal
     var isEdgeDebugEnabled: Bool = false
     var accumulationStyle: AccumulationStyle = .layered
-    var perDisplay: [String: XsnowDisplaySettings] = [:]
+    var perDisplay: [String: MacSnowDisplaySettings] = [:]
 
     init() {}
 
@@ -327,31 +327,31 @@ struct XsnowGlobalSettings: Codable {
         overlayLevelMode = try container.decodeIfPresent(OverlayLevelMode.self, forKey: .overlayLevelMode) ?? .normal
         isEdgeDebugEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEdgeDebugEnabled) ?? false
         accumulationStyle = try container.decodeIfPresent(AccumulationStyle.self, forKey: .accumulationStyle) ?? .layered
-        perDisplay = try container.decodeIfPresent([String: XsnowDisplaySettings].self, forKey: .perDisplay) ?? [:]
+        perDisplay = try container.decodeIfPresent([String: MacSnowDisplaySettings].self, forKey: .perDisplay) ?? [:]
     }
 }
 
 final class SettingsStore {
     private let defaults: UserDefaults
-    private let key = "xsnow.settings.v1"
+    private let key = "macsnow.settings.v1"
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
     }
 
-    func load() -> XsnowGlobalSettings {
+    func load() -> MacSnowGlobalSettings {
         guard let data = defaults.data(forKey: key) else {
-            return XsnowGlobalSettings()
+            return MacSnowGlobalSettings()
         }
 
         do {
-            return try JSONDecoder().decode(XsnowGlobalSettings.self, from: data)
+            return try JSONDecoder().decode(MacSnowGlobalSettings.self, from: data)
         } catch {
-            return XsnowGlobalSettings()
+            return MacSnowGlobalSettings()
         }
     }
 
-    func save(_ settings: XsnowGlobalSettings) {
+    func save(_ settings: MacSnowGlobalSettings) {
         guard let data = try? JSONEncoder().encode(settings) else {
             return
         }

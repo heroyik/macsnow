@@ -2,10 +2,10 @@ import AppKit
 
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var manager: XsnowManager?
+    private var manager: MacSnowManager?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        let manager = XsnowManager()
+        let manager = MacSnowManager()
         self.manager = manager
         manager.start()
     }

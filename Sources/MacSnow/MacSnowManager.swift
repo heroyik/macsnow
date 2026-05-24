@@ -1,12 +1,12 @@
 import AppKit
 
 @MainActor
-final class XsnowManager {
+final class MacSnowManager {
     private let displayDetector: DisplayDetector
     private let statusMenuController: StatusMenuController
     private let settingsStore: SettingsStore
     private let windowLayoutScanner: WindowLayoutScanner
-    private var settings: XsnowGlobalSettings
+    private var settings: MacSnowGlobalSettings
     private var displayControllers: [DisplayController] = []
     private var scannedWindows: [WindowSnapshot] = []
     private var collisionEdgeCount = 0
@@ -366,7 +366,7 @@ final class XsnowManager {
     }
 
     private func toggleDisplay(_ displayID: String) {
-        var displaySettings = settings.perDisplay[displayID] ?? XsnowDisplaySettings()
+        var displaySettings = settings.perDisplay[displayID] ?? MacSnowDisplaySettings()
         displaySettings.isEnabled.toggle()
         settings.perDisplay[displayID] = displaySettings
         settingsStore.save(settings)
@@ -376,7 +376,7 @@ final class XsnowManager {
 
     private func applySettingsToDisplays() {
         for controller in displayControllers {
-            let displaySettings = settings.perDisplay[controller.identity.id] ?? XsnowDisplaySettings()
+            let displaySettings = settings.perDisplay[controller.identity.id] ?? MacSnowDisplaySettings()
             let enabled = settings.isSnowEnabled && displaySettings.isEnabled
             controller.apply(
                 density: settings.density,
@@ -478,14 +478,14 @@ final class XsnowManager {
 
     private func applyFullscreenPowerSave() {
         for controller in displayControllers {
-            let displaySettings = settings.perDisplay[controller.identity.id] ?? XsnowDisplaySettings()
+            let displaySettings = settings.perDisplay[controller.identity.id] ?? MacSnowDisplaySettings()
             controller.setSnowEnabled(settings.isSnowEnabled && displaySettings.isEnabled)
         }
     }
 
     private func updateMenuState() {
         let displays = displayControllers.map { controller in
-            let displaySettings = settings.perDisplay[controller.identity.id] ?? XsnowDisplaySettings()
+            let displaySettings = settings.perDisplay[controller.identity.id] ?? MacSnowDisplaySettings()
             return (identity: controller.identity, isEnabled: displaySettings.isEnabled)
         }
         statusMenuController.updateDisplays(displays)

@@ -2,20 +2,20 @@
 
 ## Project Structure & Module Organization
 
-This repository contains planning documents and a SwiftPM-based MVP prototype for **Xsnow for macOS**, a zero-dependency menu bar app concept using AppKit and SpriteKit.
+This repository contains planning documents and a SwiftPM-based MVP prototype for **MacSnow**, a zero-dependency menu bar app concept using AppKit and SpriteKit.
 
 - `1.XSNOW PRD.md`: functional and non-functional product requirements.
 - `2.XSNOW ADD.md`: architecture design, module breakdown, and implementation roadmap.
 - `Package.swift`: SwiftPM package definition.
-- `Sources/Xsnow/`: MVP Swift app code (`XsnowManager`, `DisplayDetector`, `OverlayWindow`, `SnowScene`).
+- `Sources/MacSnow/`: MVP Swift app code (`MacSnowManager`, `DisplayDetector`, `OverlayWindow`, `SnowScene`).
 - `AGENTS.md`: contributor guidance.
 
-Future tests should live in `Tests/XsnowTests/` once the local toolchain exposes XCTest or an Xcode project is added.
+Future tests should live in `Tests/MacSnowTests/` once the local toolchain exposes XCTest or an Xcode project is added.
 
 ## Build, Test, and Development Commands
 
 - `swift build`: compile the SwiftPM macOS prototype.
-- `swift run Xsnow`: launch the menu bar app prototype.
+- `swift run MacSnow`: launch the menu bar app prototype.
 - `swift test`: currently expected to report no tests until a test target is added.
 - `git diff`: review local changes before committing, once this directory is initialized as a Git repository.
 
@@ -27,7 +27,7 @@ For every future repository change, increment the patch version by `0.0.1` befor
 
 ## Coding Style & Naming Conventions
 
-Use Swift naming conventions for future app code: `UpperCamelCase` for types, `lowerCamelCase` for properties, functions, and local variables. Prefer small, single-purpose types that match the architecture: `XsnowManager`, `DisplayController`, `WindowLayoutScanner`, and `SnowPhysicsEngine`.
+Use Swift naming conventions for future app code: `UpperCamelCase` for types, `lowerCamelCase` for properties, functions, and local variables. Prefer small, single-purpose types that match the architecture: `MacSnowManager`, `DisplayController`, `WindowLayoutScanner`, and `SnowPhysicsEngine`.
 
 Keep the project zero-dependency unless the requirements explicitly change. Prefer Apple frameworks already named in the specs: AppKit, SpriteKit, CoreGraphics, and Foundation.
 
@@ -35,7 +35,7 @@ For Markdown, use concise headings, short paragraphs, and stable requirement IDs
 
 ## Testing Guidelines
 
-No automated tests exist yet. Future Swift tests should live under `Tests/XsnowTests/` and use descriptive names such as `testDisplayDetectorRebuildsOverlaysWhenScreensChange()`.
+No automated tests exist yet. Future Swift tests should live under `Tests/MacSnowTests/` and use descriptive names such as `testDisplayDetectorRebuildsOverlaysWhenScreensChange()`.
 
 Prioritize tests around coordinate conversion, display topology changes, settings persistence, and window filtering. Performance-sensitive behavior should include repeatable benchmarks or profiling notes for particle count, CPU use, and memory use.
 

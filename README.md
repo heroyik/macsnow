@@ -1,8 +1,8 @@
-# Xsnow for macOS
+# MacSnow
 
-Xsnow for macOS is a lightweight menu bar prototype that renders falling snow across connected macOS displays without blocking normal app interaction.
+MacSnow is a lightweight menu bar prototype that renders falling snow across connected macOS displays without blocking normal app interaction.
 
-The project is currently at **main implementation 1.21**. The repository version is `1.21.43`, stored in `VERSION`. The repository includes product requirements, architecture notes, an MVP spec, an MVP implementation plan, validation notes, distribution notes, performance notes, and a SwiftPM-based AppKit/SpriteKit prototype.
+The project is currently at **main implementation 1.21**. The repository version is `1.21.45`, stored in `VERSION`. The repository includes product requirements, architecture notes, an MVP spec, an MVP implementation plan, validation notes, distribution notes, performance notes, and a SwiftPM-based AppKit/SpriteKit prototype.
 
 ## Current Status
 
@@ -88,7 +88,7 @@ Excluded from MVP 0.1:
 ├── Scripts/
 │   └── build_app_bundle.sh
 └── Sources/
-    └── Xsnow/
+    └── MacSnow/
         ├── AppDelegate.swift
         ├── DisplayController.swift
         ├── DisplayDetector.swift
@@ -98,15 +98,15 @@ Excluded from MVP 0.1:
         ├── SnowScene.swift
         ├── StatusMenuController.swift
         ├── WindowLayoutScanner.swift
-        ├── XsnowManager.swift
+        ├── MacSnowManager.swift
         └── main.swift
 ```
 
 ## Key Components
 
 - `main.swift`: starts `NSApplication` in accessory mode.
-- `AppDelegate`: creates and starts `XsnowManager`.
-- `XsnowManager`: orchestrates menu state, display overlays, and sleep/wake handling.
+- `AppDelegate`: creates and starts `MacSnowManager`.
+- `MacSnowManager`: orchestrates menu state, display overlays, and sleep/wake handling.
 - `StatusMenuController`: owns the menu bar item and Start/Stop/Quit actions.
 - `DisplayDetector`: watches macOS display configuration changes.
 - `DisplayIdentity`: creates stable display identifiers and user-facing display labels.
@@ -127,10 +127,10 @@ swift build
 Run the menu bar app:
 
 ```bash
-swift run Xsnow
+swift run MacSnow
 ```
 
-Stop the app from the menu bar item with `Quit Xsnow`.
+Stop the app from the menu bar item with `Quit MacSnow`.
 
 Build a local unsigned app bundle:
 
@@ -138,7 +138,7 @@ Build a local unsigned app bundle:
 bash Scripts/build_app_bundle.sh
 ```
 
-The generated bundle is written to `dist/Xsnow.app`.
+The generated bundle is written to `dist/MacSnow.app`.
 
 ## Install from GitHub Release
 
@@ -147,16 +147,16 @@ Use the GitHub Release when you want to install the packaged app without buildin
 1. Open the latest release page:
    <https://github.com/heroyik/macsnow/releases/latest>
 2. In the release page, expand `Assets`.
-3. Download the app archive named like `Xsnow-<version>.zip`, for example `Xsnow-1.21.42.zip`.
-4. Open the downloaded zip file. macOS will extract `Xsnow.app`.
-5. Move `Xsnow.app` to `/Applications`.
-6. Launch `Xsnow.app` from Finder or Spotlight.
-7. Because the current release is an unsigned prototype, macOS may block the first launch. If that happens, open `System Settings` -> `Privacy & Security`, find the blocked `Xsnow.app` message, and choose `Open Anyway`. You can also Control-click `Xsnow.app`, choose `Open`, then confirm the launch prompt.
-8. After launch, Xsnow runs as a menu bar app. Use the snowflake menu bar item to start or stop snow, adjust density, wind, display options, accumulation behavior, and quit the app.
+3. Download the app archive named like `MacSnow-<version>.zip`, for example `MacSnow-1.21.45.zip`.
+4. Open the downloaded zip file. macOS will extract `MacSnow.app`.
+5. Move `MacSnow.app` to `/Applications`.
+6. Launch `MacSnow.app` from Finder or Spotlight.
+7. Because the current release is an unsigned prototype, macOS may block the first launch. If that happens, open `System Settings` -> `Privacy & Security`, find the blocked `MacSnow.app` message, and choose `Open Anyway`. You can also Control-click `MacSnow.app`, choose `Open`, then confirm the launch prompt.
+8. After launch, MacSnow runs as a menu bar app. Use the snowflake menu bar item to start or stop snow, adjust density, wind, display options, accumulation behavior, and quit the app.
 
-To update Xsnow, quit the running app from the menu bar, download the newest `Xsnow-<version>.zip` from GitHub Releases, extract it, and replace the existing `/Applications/Xsnow.app`.
+To update MacSnow, quit the running app from the menu bar, download the newest `MacSnow-<version>.zip` from GitHub Releases, extract it, and replace the existing `/Applications/MacSnow.app`.
 
-To uninstall Xsnow, quit it from the menu bar and delete `/Applications/Xsnow.app`. User preferences are stored by macOS in the app defaults database and can be removed later if needed.
+To uninstall MacSnow, quit it from the menu bar and delete `/Applications/MacSnow.app`. User preferences are stored by macOS in the app defaults database and can be removed later if needed.
 
 ## Validation Status
 
@@ -186,7 +186,7 @@ Not yet verified manually:
 
 There is no automated test target yet. An initial Swift Testing/XCTest attempt was removed because the current Command Line Tools environment did not expose the expected testing modules.
 
-For now, use `swift build` for compile verification and the manual validation checklist above for MVP behavior. Add `Tests/XsnowTests/` once an Xcode project or compatible XCTest environment is available.
+For now, use `swift build` for compile verification and the manual validation checklist above for MVP behavior. Add `Tests/MacSnowTests/` once an Xcode project or compatible XCTest environment is available.
 
 ## Next Steps
 
