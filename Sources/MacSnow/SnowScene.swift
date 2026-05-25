@@ -59,8 +59,10 @@ final class SnowScene: SKScene {
         var target: CGPoint
         var velocity: CGVector
         var baseScale: CGFloat
+        var cruiseSpeed: CGFloat
         var directionFlip: CGFloat
         var bobPhase: CGFloat
+        var stridePhase: CGFloat
         var nextTargetTime: TimeInterval
     }
 
@@ -1499,6 +1501,8 @@ final class SnowScene: SKScene {
             (nil, 0.7),
             ("snowtree.xpm", 0.42),
             ("extratree.xpm", 0.46),
+            ("gifttree.xpm", 0.48),
+            ("snowman.xpm", 0.55),
             ("tannenbaum.xpm", 0.44),
             ("tree-1_100px.xpm", 0.36)
         ]
@@ -1572,9 +1576,9 @@ final class SnowScene: SKScene {
             toTarget = CGVector(dx: target.x - groundAgent.position.x, dy: target.y - groundAgent.position.y)
             distance = max(1, hypot(toTarget.dx, toTarget.dy))
         }
-        let baseSpeed: CGFloat = CGFloat.random(in: 18...42) * speedMultiplier
+        let baseSpeed: CGFloat = 30 * speedMultiplier
         let desired = CGVector(dx: toTarget.dx / distance * baseSpeed, dy: toTarget.dy / distance * baseSpeed)
-        let smoothing = min(1, deltaTime * 4.6)
+        let smoothing = min(1, deltaTime * (groundAgentState == .run ? 5.2 : 3.8))
         groundAgentVelocityVector.dx += (desired.dx - groundAgentVelocityVector.dx) * smoothing
         groundAgentVelocityVector.dy += (desired.dy - groundAgentVelocityVector.dy) * smoothing
         groundAgent.position.x += groundAgentVelocityVector.dx * deltaTime
@@ -1686,8 +1690,10 @@ final class SnowScene: SKScene {
             target: target,
             velocity: CGVector(dx: CGFloat.random(in: -16...16), dy: CGFloat.random(in: -12...12)),
             baseScale: scale,
+            cruiseSpeed: name == "eland.xpm" ? CGFloat.random(in: 22...34) : CGFloat.random(in: 26...42),
             directionFlip: directionFlip,
             bobPhase: CGFloat.random(in: 0...(.pi * 2)),
+            stridePhase: CGFloat.random(in: 0...(.pi * 2)),
             nextTargetTime: currentSceneTime + TimeInterval.random(in: 4...10)
         ))
     }
@@ -1725,22 +1731,26 @@ final class SnowScene: SKScene {
                 distance = max(1, hypot(toTarget.dx, toTarget.dy))
             }
 
-            let speed = CGFloat.random(in: 18...54)
+            let depth = polarBearDepth(at: animal.node.position.y, in: yRange)
+            let distanceEase = min(1, max(0.35, distance / 140))
+            let speed = animal.cruiseSpeed * (0.86 + depth * 0.24) * distanceEase
             let desired = CGVector(dx: toTarget.dx / distance * speed, dy: toTarget.dy / distance * speed)
-            let smoothing = min(1, deltaTime * CGFloat.random(in: 3.2...6.8))
+            let smoothing = min(1, deltaTime * 4.4)
             animal.velocity.dx += (desired.dx - animal.velocity.dx) * smoothing
             animal.velocity.dy += (desired.dy - animal.velocity.dy) * smoothing
+            let movementSpeed = hypot(animal.velocity.dx, animal.velocity.dy)
+            animal.stridePhase += max(0.03, movementSpeed * 0.42 * deltaTime)
             animal.node.position.x += animal.velocity.dx * deltaTime
             animal.node.position.y += animal.velocity.dy * deltaTime
             animal.node.position.x = min(size.width - 42, max(42, animal.node.position.x))
             animal.node.position.y = min(yRange.upperBound, max(yRange.lowerBound, animal.node.position.y))
-            animal.node.position.y += sin(CGFloat(currentTime) * 4.8 + animal.bobPhase) * 0.9
-            let depth = polarBearDepth(at: animal.node.position.y, in: yRange)
+            animal.node.position.y += abs(sin(animal.stridePhase + animal.bobPhase)) * 1.4
             let perspectiveScale = animal.baseScale * (0.82 + depth * 0.38)
             animal.node.xScale = (animal.velocity.dx >= 0 ? abs(perspectiveScale) : -abs(perspectiveScale)) * animal.directionFlip
             animal.node.yScale = perspectiveScale
             animal.node.zPosition = 11 + depth * 10
-            animal.node.zRotation = max(-0.08, min(0.08, atan2(animal.velocity.dy, abs(animal.velocity.dx) + 0.01) * 0.18))
+            let bodySway = sin(animal.stridePhase) * 0.018
+            animal.node.zRotation = max(-0.08, min(0.08, atan2(animal.velocity.dy, abs(animal.velocity.dx) + 0.01) * 0.14 + bodySway))
             movingAnimals[index] = animal
         }
     }

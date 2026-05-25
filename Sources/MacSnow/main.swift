@@ -5,4 +5,8 @@ let delegate = AppDelegate()
 
 app.delegate = delegate
 app.setActivationPolicy(.accessory)
+app.finishLaunching()
+DispatchQueue.main.async {
+    delegate.startIfNeeded()
+}
 app.run()

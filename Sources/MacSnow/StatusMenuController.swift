@@ -38,7 +38,7 @@ final class StatusMenuController {
     var onToggleDisplay: ((String) -> Void)?
     var onQuit: (() -> Void)?
 
-    private let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    private let statusItem = NSStatusBar.system.statusItem(withLength: 22)
     private let menu = NSMenu()
     private let toggleItem = NSMenuItem(title: "Snow: On", action: #selector(toggleSnow), keyEquivalent: "")
     private let visibilityMenu = NSMenu()
@@ -80,8 +80,15 @@ final class StatusMenuController {
     private var displayItemsByID: [String: NSMenuItem] = [:]
 
     func configure(isSnowEnabled: Bool) {
-        statusItem.button?.title = "❄︎"
-        statusItem.button?.toolTip = "MacSnow"
+        statusItem.autosaveName = "local.macsnow.statusItem"
+        if let button = statusItem.button {
+            button.title = ""
+            button.attributedTitle = NSAttributedString()
+            button.image = Self.makeStatusImage()
+            button.imagePosition = .imageOnly
+            button.imageScaling = .scaleProportionallyDown
+            button.toolTip = "MacSnow"
+        }
 
         toggleItem.target = self
         menu.addItem(toggleItem)
@@ -376,7 +383,6 @@ final class StatusMenuController {
     func setReindeerEnabled(_ enabled: Bool) { reindeerItem.state = enabled ? .on : .off }
     func setMooseEnabled(_ enabled: Bool) { mooseItem.state = enabled ? .on : .off }
     func setPolarBearEnabled(_ enabled: Bool) { polarBearItem.state = enabled ? .on : .off }
-
     func setGroundAgentEnabled(_ enabled: Bool) {
         groundAgentItem.state = enabled ? .on : .off
     }
@@ -541,7 +547,6 @@ final class StatusMenuController {
     @objc private func toggleReindeer() { onToggleReindeer?() }
     @objc private func toggleMoose() { onToggleMoose?() }
     @objc private func togglePolarBear() { onTogglePolarBear?() }
-
     @objc private func toggleGroundAgent() {
         onToggleGroundAgent?()
     }
@@ -666,6 +671,31 @@ final class StatusMenuController {
         default:
             "Medium"
         }
+    }
+
+    private static func makeStatusImage() -> NSImage {
+        if let image = NSImage(systemSymbolName: "snowflake", accessibilityDescription: "MacSnow") {
+            image.isTemplate = true
+            image.size = NSSize(width: 16, height: 16)
+            return image
+        }
+
+        let image = NSImage(size: NSSize(width: 16, height: 16))
+        image.lockFocus()
+        NSColor.labelColor.setStroke()
+        let center = NSPoint(x: 8, y: 8)
+        for angle in stride(from: CGFloat(0), to: .pi, by: .pi / 3) {
+            let dx = cos(angle) * 6
+            let dy = sin(angle) * 6
+            let path = NSBezierPath()
+            path.move(to: NSPoint(x: center.x - dx, y: center.y - dy))
+            path.line(to: NSPoint(x: center.x + dx, y: center.y + dy))
+            path.lineWidth = 1.4
+            path.stroke()
+        }
+        image.unlockFocus()
+        image.isTemplate = true
+        return image
     }
 
     private var appVersion: String {
