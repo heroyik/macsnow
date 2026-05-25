@@ -14,11 +14,13 @@ final class MacSnowManager {
     private var powerSaveTimer: Timer?
 
     init() {
+        Diag.log("MacSnowManager.init() start")
         displayDetector = DisplayDetector()
         statusMenuController = StatusMenuController()
         settingsStore = SettingsStore()
         windowLayoutScanner = WindowLayoutScanner()
         settings = settingsStore.load()
+        Diag.log("MacSnowManager.init() callbacks setup start")
 
         statusMenuController.onToggleSnow = { [weak self] in
             guard let self else { return }
@@ -56,6 +58,8 @@ final class MacSnowManager {
             self?.setSceneryEnabled(!(self?.settings.isSceneryEnabled ?? true))
         }
         statusMenuController.onToggleTrees = { [weak self] in self?.setTreesEnabled(!(self?.settings.areTreesEnabled ?? true)) }
+        statusMenuController.onToggleGiftTree = { [weak self] in self?.setGiftTreeEnabled(!(self?.settings.isGiftTreeEnabled ?? true)) }
+        statusMenuController.onToggleSnowman = { [weak self] in self?.setSnowmanEnabled(!(self?.settings.isSnowmanEnabled ?? true)) }
         statusMenuController.onToggleHouse = { [weak self] in self?.setHouseEnabled(!(self?.settings.isHouseEnabled ?? true)) }
         statusMenuController.onToggleReindeer = { [weak self] in self?.setReindeerEnabled(!(self?.settings.isReindeerEnabled ?? true)) }
         statusMenuController.onToggleMoose = { [weak self] in self?.setMooseEnabled(!(self?.settings.isMooseEnabled ?? true)) }
@@ -119,7 +123,10 @@ final class MacSnowManager {
     }
 
     func start() {
+        Diag.log("MacSnowManager.start() begin")
+        Diag.log("Calling statusMenuController.configure()...")
         statusMenuController.configure(isSnowEnabled: settings.isSnowEnabled)
+        Diag.log("statusMenuController.configure() completed")
         statusMenuController.setDensity(settings.density)
         statusMenuController.setWindStrength(settings.windStrength)
         statusMenuController.setWindDirection(settings.windDirection)
@@ -134,6 +141,8 @@ final class MacSnowManager {
         statusMenuController.setSantaEnabled(settings.isSantaEnabled)
         statusMenuController.setSceneryEnabled(settings.isSceneryEnabled)
         statusMenuController.setTreesEnabled(settings.areTreesEnabled)
+        statusMenuController.setGiftTreeEnabled(settings.isGiftTreeEnabled)
+        statusMenuController.setSnowmanEnabled(settings.isSnowmanEnabled)
         statusMenuController.setHouseEnabled(settings.isHouseEnabled)
         statusMenuController.setReindeerEnabled(settings.isReindeerEnabled)
         statusMenuController.setMooseEnabled(settings.isMooseEnabled)
@@ -262,6 +271,8 @@ final class MacSnowManager {
     }
 
     private func setTreesEnabled(_ enabled: Bool) { settings.areTreesEnabled = enabled; settingsStore.save(settings); statusMenuController.setTreesEnabled(enabled); applySettingsToDisplays() }
+    private func setGiftTreeEnabled(_ enabled: Bool) { settings.isGiftTreeEnabled = enabled; settingsStore.save(settings); statusMenuController.setGiftTreeEnabled(enabled); applySettingsToDisplays() }
+    private func setSnowmanEnabled(_ enabled: Bool) { settings.isSnowmanEnabled = enabled; settingsStore.save(settings); statusMenuController.setSnowmanEnabled(enabled); applySettingsToDisplays() }
     private func setHouseEnabled(_ enabled: Bool) { settings.isHouseEnabled = enabled; settingsStore.save(settings); statusMenuController.setHouseEnabled(enabled); applySettingsToDisplays() }
     private func setReindeerEnabled(_ enabled: Bool) { settings.isReindeerEnabled = enabled; settingsStore.save(settings); statusMenuController.setReindeerEnabled(enabled); applySettingsToDisplays() }
     private func setMooseEnabled(_ enabled: Bool) { settings.isMooseEnabled = enabled; settingsStore.save(settings); statusMenuController.setMooseEnabled(enabled); applySettingsToDisplays() }
@@ -397,6 +408,8 @@ final class MacSnowManager {
             controller.setSceneryEnabled(settings.isSceneryEnabled)
             controller.setSceneryItemOptions(
                 trees: settings.areTreesEnabled,
+                giftTree: settings.isGiftTreeEnabled,
+                snowman: settings.isSnowmanEnabled,
                 house: settings.isHouseEnabled,
                 reindeer: settings.isReindeerEnabled,
                 moose: settings.isMooseEnabled,

@@ -140,6 +140,14 @@ bash Scripts/build_app_bundle.sh
 
 The generated bundle is written to `dist/MacSnow.app`.
 
+Build a local unsigned DMG installer image:
+
+```bash
+bash Scripts/build_dmg.sh
+```
+
+The generated DMG is written to `dist/MacSnow-<version>.dmg` and contains `MacSnow.app` plus an `/Applications` shortcut.
+
 ## Install from GitHub Release
 
 Use the GitHub Release when you want to install the packaged app without building it from source.
@@ -147,14 +155,14 @@ Use the GitHub Release when you want to install the packaged app without buildin
 1. Open the latest release page:
    <https://github.com/heroyik/macsnow/releases/latest>
 2. In the release page, expand `Assets`.
-3. Download the app archive named like `MacSnow-<version>.zip`, for example `MacSnow-1.21.45.zip`.
-4. Open the downloaded zip file. macOS will extract `MacSnow.app`.
-5. Move `MacSnow.app` to `/Applications`.
+3. Download the installer image named like `MacSnow-<version>.dmg`.
+4. Open the downloaded DMG.
+5. Drag `MacSnow.app` to the `/Applications` shortcut in the DMG window.
 6. Launch `MacSnow.app` from Finder or Spotlight.
 7. Because the current release is an unsigned prototype, macOS may block the first launch. If that happens, open `System Settings` -> `Privacy & Security`, find the blocked `MacSnow.app` message, and choose `Open Anyway`. You can also Control-click `MacSnow.app`, choose `Open`, then confirm the launch prompt.
 8. After launch, MacSnow runs as a menu bar app. Use the snowflake menu bar item to start or stop snow, adjust density, wind, display options, accumulation behavior, and quit the app.
 
-To update MacSnow, quit the running app from the menu bar, download the newest `MacSnow-<version>.zip` from GitHub Releases, extract it, and replace the existing `/Applications/MacSnow.app`.
+To update MacSnow, quit the running app from the menu bar, download the newest `MacSnow-<version>.dmg` from GitHub Releases, open it, and replace the existing `/Applications/MacSnow.app`.
 
 To uninstall MacSnow, quit it from the menu bar and delete `/Applications/MacSnow.app`. User preferences are stored by macOS in the app defaults database and can be removed later if needed.
 

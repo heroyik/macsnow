@@ -269,6 +269,8 @@ struct MacSnowGlobalSettings: Codable {
     var isSantaEnabled: Bool = true
     var isSceneryEnabled: Bool = true
     var areTreesEnabled: Bool = true
+    var isGiftTreeEnabled: Bool = true
+    var isSnowmanEnabled: Bool = true
     var isHouseEnabled: Bool = true
     var isReindeerEnabled: Bool = true
     var isMooseEnabled: Bool = true
@@ -308,6 +310,8 @@ struct MacSnowGlobalSettings: Codable {
         isSantaEnabled = try container.decodeIfPresent(Bool.self, forKey: .isSantaEnabled) ?? true
         isSceneryEnabled = try container.decodeIfPresent(Bool.self, forKey: .isSceneryEnabled) ?? true
         areTreesEnabled = try container.decodeIfPresent(Bool.self, forKey: .areTreesEnabled) ?? true
+        isGiftTreeEnabled = try container.decodeIfPresent(Bool.self, forKey: .isGiftTreeEnabled) ?? true
+        isSnowmanEnabled = try container.decodeIfPresent(Bool.self, forKey: .isSnowmanEnabled) ?? true
         isHouseEnabled = try container.decodeIfPresent(Bool.self, forKey: .isHouseEnabled) ?? true
         isReindeerEnabled = try container.decodeIfPresent(Bool.self, forKey: .isReindeerEnabled) ?? true
         isMooseEnabled = try container.decodeIfPresent(Bool.self, forKey: .isMooseEnabled) ?? true

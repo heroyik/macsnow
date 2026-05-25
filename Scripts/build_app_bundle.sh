@@ -27,6 +27,7 @@ if [[ -d "$RESOURCE_BUNDLE" ]]; then
 fi
 
 cp -R "$ROOT_DIR/xsnow-org/xsnow-3.9.1/src/Pixmaps" "$RESOURCES_DIR/Pixmaps"
+cp "$ROOT_DIR/Resources/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 
 cat > "$CONTENTS_DIR/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -43,6 +44,8 @@ cat > "$CONTENTS_DIR/Info.plist" <<PLIST
     <string>6.0</string>
     <key>CFBundleName</key>
     <string>$APP_NAME</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>CFBundleShortVersionString</key>
@@ -51,9 +54,9 @@ cat > "$CONTENTS_DIR/Info.plist" <<PLIST
     <string>$VERSION</string>
     <key>LSMinimumSystemVersion</key>
     <string>14.0</string>
-    <key>LSUIElement</key>
-    <true/>
     <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>LSUIElement</key>
     <true/>
 </dict>
 </plist>

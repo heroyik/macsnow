@@ -17,7 +17,19 @@ Future tests should live in `Tests/MacSnowTests/` once the local toolchain expos
 - `swift build`: compile the SwiftPM macOS prototype.
 - `swift run MacSnow`: launch the menu bar app prototype.
 - `swift test`: currently expected to report no tests until a test target is added.
+- `bash Scripts/build_app_bundle.sh`: create an unsigned local `dist/MacSnow.app` bundle.
+- `bash Scripts/build_dmg.sh`: create an unsigned local `dist/MacSnow-<version>.dmg` installer image containing `MacSnow.app` and an `/Applications` shortcut.
 - `git diff`: review local changes before committing, once this directory is initialized as a Git repository.
+
+DMG packaging is the default install artifact for releases. Keep the DMG filename aligned with `VERSION` and regenerate it after every bundle-affecting change.
+
+## Code Search
+
+Use Semble for repository code search on every user prompt that asks about code, files, symbols, behavior, bugs, tests, or implementation details.
+
+- Call `mcp__semble__search` with the full user prompt as the query and `/Users/nick/proj/macsnow` as `repo` before falling back to broad text search.
+- Use `mcp__semble__find_related` from a prior result when related implementations or nearby call sites would help.
+- Prefer Semble over `rg`, `grep`, `find`, and broad file reads for locating code; use shell or context-mode afterward only for targeted verification, builds, diffs, and edits.
 
 ## Versioning
 

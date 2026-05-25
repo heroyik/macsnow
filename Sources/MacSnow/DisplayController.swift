@@ -68,8 +68,8 @@ final class DisplayController {
         scene.setSceneryEnabled(enabled)
     }
 
-    func setSceneryItemOptions(trees: Bool, house: Bool, reindeer: Bool, moose: Bool, polarBear: Bool) {
-        scene.setSceneryItemOptions(trees: trees, house: house, reindeer: reindeer, moose: moose, polarBear: polarBear)
+    func setSceneryItemOptions(trees: Bool, giftTree: Bool, snowman: Bool, house: Bool, reindeer: Bool, moose: Bool, polarBear: Bool) {
+        scene.setSceneryItemOptions(trees: trees, giftTree: giftTree, snowman: snowman, house: house, reindeer: reindeer, moose: moose, polarBear: polarBear)
     }
 
     func setGroundAgentEnabled(_ enabled: Bool) {

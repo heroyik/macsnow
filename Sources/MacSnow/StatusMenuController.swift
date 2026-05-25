@@ -17,6 +17,8 @@ final class StatusMenuController {
     var onToggleSanta: (() -> Void)?
     var onToggleScenery: (() -> Void)?
     var onToggleTrees: (() -> Void)?
+    var onToggleGiftTree: (() -> Void)?
+    var onToggleSnowman: (() -> Void)?
     var onToggleHouse: (() -> Void)?
     var onToggleReindeer: (() -> Void)?
     var onToggleMoose: (() -> Void)?
@@ -51,6 +53,8 @@ final class StatusMenuController {
     private let santaItem = NSMenuItem(title: "Santa Flight", action: #selector(toggleSanta), keyEquivalent: "")
     private let sceneryItem = NSMenuItem(title: "Scenery", action: #selector(toggleScenery), keyEquivalent: "")
     private let treesItem = NSMenuItem(title: "Trees", action: #selector(toggleTrees), keyEquivalent: "")
+    private let giftTreeItem = NSMenuItem(title: "Gift Tree", action: #selector(toggleGiftTree), keyEquivalent: "")
+    private let snowmanItem = NSMenuItem(title: "Snowman", action: #selector(toggleSnowman), keyEquivalent: "")
     private let houseItem = NSMenuItem(title: "House", action: #selector(toggleHouse), keyEquivalent: "")
     private let reindeerItem = NSMenuItem(title: "Reindeer", action: #selector(toggleReindeer), keyEquivalent: "")
     private let mooseItem = NSMenuItem(title: "Moose", action: #selector(toggleMoose), keyEquivalent: "")
@@ -80,14 +84,15 @@ final class StatusMenuController {
     private var displayItemsByID: [String: NSMenuItem] = [:]
 
     func configure(isSnowEnabled: Bool) {
+        Diag.log("configure() called, isSnowEnabled=\(isSnowEnabled)")
         statusItem.autosaveName = "local.macsnow.statusItem"
-        if let button = statusItem.button {
-            button.title = ""
-            button.attributedTitle = NSAttributedString()
-            button.image = Self.makeStatusImage()
-            button.imagePosition = .imageOnly
-            button.imageScaling = .scaleProportionallyDown
-            button.toolTip = "MacSnow"
+        Diag.log("configure() - statusItem=\(statusItem), button=\(String(describing: statusItem.button)), length=\(statusItem.length)")
+
+        Diag.log("configure() - statusItem type: \(type(of: statusItem))")
+        if let btn = statusItem.button {
+            Diag.log("configure() - button type: \(type(of: btn)), alpha=\(btn.alphaValue), enabled=\(btn.isEnabled), hidden=\(btn.isHidden)")
+            Self.applyStatusImage(to: btn)
+            Diag.log("configure() - status image applied immediately")
         }
 
         toggleItem.target = self
@@ -195,7 +200,7 @@ final class StatusMenuController {
 
         sceneryItem.target = self
         visibilityMenu.addItem(sceneryItem)
-        for item in [treesItem, houseItem, reindeerItem, mooseItem, polarBearItem] {
+        for item in [treesItem, giftTreeItem, snowmanItem, houseItem, reindeerItem, mooseItem, polarBearItem] {
             item.target = self
             visibilityMenu.addItem(item)
         }
@@ -282,6 +287,15 @@ final class StatusMenuController {
 
         statusItem.menu = menu
         setSnowEnabled(isSnowEnabled)
+
+        // NSSceneStatusItem on macOS 26+ silently discards button properties
+        // set before its scene is fully active. Defer to after scene activation.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            guard let self, let button = self.statusItem.button else { return }
+            Diag.log("deferred0.2: title='\(button.title)', image=\(button.image != nil)")
+            Self.applyStatusImage(to: button)
+            Diag.log("deferred0.2: re-applied")
+        }
     }
 
     func setSnowEnabled(_ enabled: Bool) {
@@ -373,12 +387,14 @@ final class StatusMenuController {
 
     func setSceneryEnabled(_ enabled: Bool) {
         sceneryItem.state = enabled ? .on : .off
-        for item in [treesItem, houseItem, reindeerItem, mooseItem, polarBearItem] {
+        for item in [treesItem, giftTreeItem, snowmanItem, houseItem, reindeerItem, mooseItem, polarBearItem] {
             item.isEnabled = enabled
         }
     }
 
     func setTreesEnabled(_ enabled: Bool) { treesItem.state = enabled ? .on : .off }
+    func setGiftTreeEnabled(_ enabled: Bool) { giftTreeItem.state = enabled ? .on : .off }
+    func setSnowmanEnabled(_ enabled: Bool) { snowmanItem.state = enabled ? .on : .off }
     func setHouseEnabled(_ enabled: Bool) { houseItem.state = enabled ? .on : .off }
     func setReindeerEnabled(_ enabled: Bool) { reindeerItem.state = enabled ? .on : .off }
     func setMooseEnabled(_ enabled: Bool) { mooseItem.state = enabled ? .on : .off }
@@ -543,6 +559,8 @@ final class StatusMenuController {
     }
 
     @objc private func toggleTrees() { onToggleTrees?() }
+    @objc private func toggleGiftTree() { onToggleGiftTree?() }
+    @objc private func toggleSnowman() { onToggleSnowman?() }
     @objc private func toggleHouse() { onToggleHouse?() }
     @objc private func toggleReindeer() { onToggleReindeer?() }
     @objc private func toggleMoose() { onToggleMoose?() }
@@ -696,6 +714,13 @@ final class StatusMenuController {
         image.unlockFocus()
         image.isTemplate = true
         return image
+    }
+
+    private static func applyStatusImage(to button: NSStatusBarButton) {
+        button.image = makeStatusImage()
+        button.imagePosition = .imageOnly
+        button.imageScaling = .scaleProportionallyDown
+        button.toolTip = "MacSnow"
     }
 
     private var appVersion: String {

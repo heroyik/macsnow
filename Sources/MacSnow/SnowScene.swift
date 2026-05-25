@@ -133,6 +133,8 @@ final class SnowScene: SKScene {
     private var isSantaEnabled = true
     private var isSceneryEnabled = true
     private var areTreesEnabled = true
+    private var isGiftTreeEnabled = true
+    private var isSnowmanEnabled = true
     private var isHouseEnabled = true
     private var isReindeerEnabled = true
     private var isMooseEnabled = true
@@ -324,8 +326,10 @@ final class SnowScene: SKScene {
         rebuildSeasonalObjects()
     }
 
-    func setSceneryItemOptions(trees: Bool, house: Bool, reindeer: Bool, moose: Bool, polarBear: Bool) {
+    func setSceneryItemOptions(trees: Bool, giftTree: Bool, snowman: Bool, house: Bool, reindeer: Bool, moose: Bool, polarBear: Bool) {
         areTreesEnabled = trees
+        isGiftTreeEnabled = giftTree
+        isSnowmanEnabled = snowman
         isHouseEnabled = house
         isReindeerEnabled = reindeer
         isMooseEnabled = moose
@@ -1478,7 +1482,7 @@ final class SnowScene: SKScene {
             return
         }
 
-        if areTreesEnabled {
+        if areTreesEnabled || isGiftTreeEnabled || isSnowmanEnabled {
             addRandomTrees()
         }
         if isHouseEnabled {
@@ -1496,16 +1500,26 @@ final class SnowScene: SKScene {
     }
 
     private func addRandomTrees() {
-        let treeAssets: [(String?, CGFloat)] = [
-            (nil, 0.9),
-            (nil, 0.7),
-            ("snowtree.xpm", 0.42),
-            ("extratree.xpm", 0.46),
-            ("gifttree.xpm", 0.48),
-            ("snowman.xpm", 0.55),
-            ("tannenbaum.xpm", 0.44),
-            ("tree-1_100px.xpm", 0.36)
-        ]
+        var treeAssets: [(String?, CGFloat)] = []
+        if areTreesEnabled {
+            treeAssets.append(contentsOf: [
+                (nil, 0.9),
+                (nil, 0.7),
+                ("snowtree.xpm", 0.42),
+                ("extratree.xpm", 0.46),
+                ("tannenbaum.xpm", 0.44),
+                ("tree-1_100px.xpm", 0.36)
+            ])
+        }
+        if isGiftTreeEnabled {
+            treeAssets.append(("gifttree.xpm", 0.48))
+        }
+        if isSnowmanEnabled {
+            treeAssets.append(("snowman.xpm", 0.55))
+        }
+        guard !treeAssets.isEmpty else {
+            return
+        }
         let count = max(2, Int((CGFloat(treeAssets.count) * objectAmount.multiplier).rounded()))
         for index in 0..<min(count, treeAssets.count) {
             let item = treeAssets[index]
