@@ -46,7 +46,7 @@ Completed so far:
 - Replaced the Santa/sleigh asset with a more classic Xsnow-style retro sprite asset.
 - Removed Santa/sleigh display logic and the bundled Santa/sleigh image asset.
 - Added GitHub Release download and install instructions.
-- Verified `swift build` succeeds.
+- Verified `swift build -c release` succeeds.
 
 ## MVP 0.1 Scope
 
@@ -121,14 +121,17 @@ Excluded from MVP 0.1:
 Build the prototype:
 
 ```bash
-swift build
+swift build -c release
 ```
 
-Run the menu bar app:
+Run the menu bar app from a release SwiftPM build:
 
 ```bash
-swift run MacSnow
+swift run -c release MacSnow
 ```
+
+Do not use default `swift build` or `swift run MacSnow`; SwiftPM defaults to debug mode and creates `.build/.../debug/MacSnow`, which can appear as an extra menu bar app.
+The package manifest blocks debug configuration with a compile-time error, so accidental debug builds fail before producing a MacSnow debug executable.
 
 Stop the app from the menu bar item with `Quit MacSnow`.
 
@@ -170,7 +173,7 @@ To uninstall MacSnow, quit it from the menu bar and delete `/Applications/MacSno
 
 Verified:
 
-- `swift build` completes successfully.
+- `swift build -c release` completes successfully.
 
 Manual validation plan:
 
@@ -194,7 +197,7 @@ Not yet verified manually:
 
 There is no automated test target yet. An initial Swift Testing/XCTest attempt was removed because the current Command Line Tools environment did not expose the expected testing modules.
 
-For now, use `swift build` for compile verification and the manual validation checklist above for MVP behavior. Add `Tests/MacSnowTests/` once an Xcode project or compatible XCTest environment is available.
+For now, use `swift build -c release` for compile verification and the manual validation checklist above for MVP behavior. Add `Tests/MacSnowTests/` once an Xcode project or compatible XCTest environment is available.
 
 ## Next Steps
 

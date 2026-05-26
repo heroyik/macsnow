@@ -1,0 +1,5 @@
+MacSnow debug builds are forbidden.
+
+This sentinel file intentionally blocks SwiftPM from creating a default debug
+build shortcut in this workspace. Use `swift build -c release` or
+`bash Scripts/build_app_bundle.sh`.

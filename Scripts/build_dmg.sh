@@ -9,8 +9,18 @@ APP_DIR="$DIST_DIR/$APP_NAME.app"
 DMG_NAME="$APP_NAME-$VERSION.dmg"
 DMG_PATH="$DIST_DIR/$DMG_NAME"
 STAGING_DIR="$DIST_DIR/dmg-staging"
+LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
 
 cd "$ROOT_DIR"
+
+cleanup_staging() {
+    if [[ -x "$LSREGISTER" && -d "$STAGING_DIR/$APP_NAME.app" ]]; then
+        "$LSREGISTER" -u "$STAGING_DIR/$APP_NAME.app" >/dev/null 2>&1 || true
+    fi
+    rm -rf "$STAGING_DIR"
+}
+
+trap cleanup_staging EXIT
 
 bash "$ROOT_DIR/Scripts/build_app_bundle.sh"
 
@@ -27,6 +37,7 @@ hdiutil create \
     -format UDZO \
     "$DMG_PATH"
 
-rm -rf "$STAGING_DIR"
+cleanup_staging
+trap - EXIT
 
 echo "Built $DMG_PATH"

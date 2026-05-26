@@ -1,4 +1,8 @@
-.build/
+.build/*
+!.build/debug
+!.build/arm64-apple-macosx/
+.build/arm64-apple-macosx/*
+!.build/arm64-apple-macosx/debug
 .swiftpm/
 dist/
 DerivedData/

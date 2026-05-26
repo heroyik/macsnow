@@ -12,7 +12,10 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "MacSnow"
+            name: "MacSnow",
+            swiftSettings: [
+                .define("MACSNOW_FORBID_DEBUG_BUILD", .when(configuration: .debug))
+            ]
         )
     ]
 )

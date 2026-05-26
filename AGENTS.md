@@ -14,14 +14,17 @@ Future tests should live in `Tests/MacSnowTests/` once the local toolchain expos
 
 ## Build, Test, and Development Commands
 
-- `swift build`: compile the SwiftPM macOS prototype.
-- `swift run MacSnow`: launch the menu bar app prototype.
+- `swift build -c release`: compile the SwiftPM macOS prototype without creating a debug executable.
+- `swift run -c release MacSnow`: launch the menu bar app prototype from a release SwiftPM build when needed.
 - `swift test`: currently expected to report no tests until a test target is added.
 - `bash Scripts/build_app_bundle.sh`: create an unsigned local `dist/MacSnow.app` bundle.
 - `bash Scripts/build_dmg.sh`: create an unsigned local `dist/MacSnow-<version>.dmg` installer image containing `MacSnow.app` and an `/Applications` shortcut.
 - `git diff`: review local changes before committing, once this directory is initialized as a Git repository.
 
 DMG packaging is the default install artifact for releases. Keep the DMG filename aligned with `VERSION` and regenerate it after every bundle-affecting change.
+
+Do not use default `swift build` or `swift run MacSnow`; SwiftPM defaults to debug mode and creates `.build/.../debug/MacSnow`, which can register as an extra menu bar app.
+The package manifest also blocks debug configuration with a compile-time error, so debug artifacts should not be produced.
 
 ## Code Search
 

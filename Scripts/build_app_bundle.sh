@@ -3,7 +3,11 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VERSION="$(tr -d '[:space:]' < "$ROOT_DIR/VERSION")"
-CONFIGURATION="${CONFIGURATION:-release}"
+if [[ -n "${CONFIGURATION:-}" && "${CONFIGURATION}" != "release" ]]; then
+    echo "CONFIGURATION=$CONFIGURATION is unsupported; MacSnow builds release-only." >&2
+    exit 1
+fi
+CONFIGURATION="release"
 APP_NAME="MacSnow"
 BUILD_DIR="$ROOT_DIR/.build/$CONFIGURATION"
 DIST_DIR="$ROOT_DIR/dist"
@@ -43,6 +47,8 @@ cat > "$CONTENTS_DIR/Info.plist" <<PLIST
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>
+    <string>$APP_NAME</string>
+    <key>CFBundleDisplayName</key>
     <string>$APP_NAME</string>
     <key>CFBundleIconFile</key>
     <string>AppIcon</string>
