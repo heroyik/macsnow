@@ -24,12 +24,12 @@ MacSnow is not:
 - A screen recorder.
 - A heavyweight desktop customization suite.
 
-Current repository version: `1.21.79`
+Current repository version: `1.21.81`
 
 Latest generated local release artifact currently available in this checkout:
 
 ```text
-dist/MacSnow-1.21.78.dmg
+dist/MacSnow-1.21.81.dmg
 ```
 
 ## Screenshot
@@ -53,6 +53,18 @@ Modern macOS makes this trickier than it sounds:
 - Overlay windows need to be click-through, transparent, multi-display aware, and polite around fullscreen spaces.
 
 MacSnow leans into that reality. The project now tries hard to keep only one real MacSnow app identity alive.
+
+## What's New In 1.21.81
+
+This patch tightens the menu bar experience and display toggles:
+
+- Turning a display off in `Displays` now clears every visual object on that display, not just active snowfall.
+- Cleared display content includes falling flakes, celestial effects, birds, scenery, ground agents, Santa, gifts, accumulation, collapse particles, and window tracking state.
+- Disabled displays are skipped during window snapshot and collision-edge updates, so accumulation does not quietly come back after the display is unset.
+- Debug UI is gone from the menu: `Show Edge Debug` and the `Debug: overlays ...` status row were removed.
+- Edge-debug settings and scene rendering code were removed from the app path.
+- Stale LaunchServices registrations from old DMG mounts and local `dist/MacSnow.app` builds were cleaned up during validation, leaving `/Applications/MacSnow.app` as the only registered MacSnow app.
+- The app bundle and DMG build scripts now unregister local staging bundles after packaging so local build artifacts do not reappear as duplicate menu bar entries.
 
 ## Feature Tour
 
@@ -115,7 +127,6 @@ The current rendering model includes:
 - Color mode options
 - Seasonal scene objects
 - Window-edge accumulation logic
-- Optional edge debug visualization
 
 ### Multi-Display Support
 
@@ -606,6 +617,8 @@ Use this when you need it to behave differently around desktop windows, fullscre
 
 Lets you toggle MacSnow per display.
 
+When a display is toggled off, MacSnow clears that display's overlay instead of merely pausing snow generation. That means no leftover moon, stars, birds, trees, snowmen, animals, gifts, Santa sprites, accumulated snow, or collision artifacts should remain on the disabled display.
+
 ## Validation
 
 Use this stack when validating a change:
@@ -671,6 +684,20 @@ Things to check:
    ```
 
 The current runtime lock should prevent two MacSnow processes from staying alive at the same time.
+
+If System Settings still shows a second off-state MacSnow entry with a generic icon, check LaunchServices for stale DMG or development registrations. In one confirmed case, the stale item pointed to a missing mounted-DMG app:
+
+```text
+/Volumes/MacSnow 1.21.73/MacSnow.app
+```
+
+The active installed app should be the only remaining registration:
+
+```text
+/Applications/MacSnow.app
+```
+
+Development builds under `dist/MacSnow.app` can also appear as separate app registrations while testing. Unregister stale paths before judging whether System Settings is clean.
 
 ### `swift build` fails
 

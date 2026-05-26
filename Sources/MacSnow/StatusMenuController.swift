@@ -36,7 +36,6 @@ final class StatusMenuController {
     var onSelectAccumulationStyle: ((AccumulationStyle) -> Void)?
     var onClearAccumulation: (() -> Void)?
     var onSelectOverlayLevel: ((OverlayLevelMode) -> Void)?
-    var onToggleEdgeDebug: (() -> Void)?
     var onToggleDisplay: ((String) -> Void)?
     var onQuit: (() -> Void)?
 
@@ -64,7 +63,6 @@ final class StatusMenuController {
     private let rudolphItem = NSMenuItem(title: "Rudolph", action: #selector(toggleRudolph), keyEquivalent: "")
     private let accumulationItem = NSMenuItem(title: "Window Accumulation", action: #selector(toggleAccumulation), keyEquivalent: "")
     private let clearAccumulationItem = NSMenuItem(title: "Clear Accumulation", action: #selector(clearAccumulation), keyEquivalent: "")
-    private let edgeDebugItem = NSMenuItem(title: "Show Edge Debug", action: #selector(toggleEdgeDebug), keyEquivalent: "")
     private let versionItem = NSMenuItem(title: "Version -", action: nil, keyEquivalent: "")
     private let densityMenu = NSMenu()
     private let visualScaleMenu = NSMenu()
@@ -80,7 +78,6 @@ final class StatusMenuController {
     private let accumulationStyleMenu = NSMenu()
     private let overlayLevelMenu = NSMenu()
     private let displaysMenu = NSMenu()
-    private let debugItem = NSMenuItem(title: "Debug: -", action: nil, keyEquivalent: "")
     private var displayItemsByID: [String: NSMenuItem] = [:]
 
     func configure(isSnowEnabled: Bool) {
@@ -267,15 +264,10 @@ final class StatusMenuController {
             overlayLevelMenu.addItem(item)
         }
 
-        edgeDebugItem.target = self
-        menu.addItem(edgeDebugItem)
-
         let displaysRoot = NSMenuItem(title: "Displays", action: nil, keyEquivalent: "")
         menu.addItem(displaysRoot)
         menu.setSubmenu(displaysMenu, for: displaysRoot)
 
-        debugItem.isEnabled = false
-        menu.addItem(debugItem)
         versionItem.isEnabled = false
         versionItem.title = "Version \(appVersion)"
         menu.addItem(versionItem)
@@ -451,10 +443,6 @@ final class StatusMenuController {
         }
     }
 
-    func setEdgeDebugEnabled(_ enabled: Bool) {
-        edgeDebugItem.state = enabled ? .on : .off
-    }
-
     func updateDisplays(_ displays: [(identity: DisplayIdentity, isEnabled: Bool)]) {
         displaysMenu.removeAllItems()
         displayItemsByID.removeAll()
@@ -474,16 +462,6 @@ final class StatusMenuController {
             displaysMenu.addItem(item)
             displayItemsByID[display.identity.id] = item
         }
-    }
-
-    func updateDebug(
-        overlayCount: Int,
-        activeSceneCount: Int,
-        density: SnowDensity,
-        scannedWindowCount: Int,
-        collisionEdgeCount: Int
-    ) {
-        debugItem.title = "Debug: overlays \(overlayCount), active \(activeSceneCount), windows \(scannedWindowCount), edges \(collisionEdgeCount), \(density.title)"
     }
 
     @objc private func toggleSnow() {
@@ -663,10 +641,6 @@ final class StatusMenuController {
             return
         }
         onSelectOverlayLevel?(mode)
-    }
-
-    @objc private func toggleEdgeDebug() {
-        onToggleEdgeDebug?()
     }
 
     @objc private func toggleDisplay(_ sender: NSMenuItem) {

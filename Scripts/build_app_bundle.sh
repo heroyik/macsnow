@@ -15,6 +15,7 @@ APP_DIR="$DIST_DIR/$APP_NAME.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
+LSREGISTER="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister"
 
 cd "$ROOT_DIR"
 swift build -c "$CONFIGURATION"
@@ -69,5 +70,9 @@ cat > "$CONTENTS_DIR/Info.plist" <<PLIST
 PLIST
 
 printf 'APPL????' > "$CONTENTS_DIR/PkgInfo"
+
+if [[ -x "$LSREGISTER" ]]; then
+    "$LSREGISTER" -u "$APP_DIR" >/dev/null 2>&1 || true
+fi
 
 echo "Built $APP_DIR"

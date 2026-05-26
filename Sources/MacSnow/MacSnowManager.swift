@@ -9,7 +9,6 @@ final class MacSnowManager {
     private var settings: MacSnowGlobalSettings
     private var displayControllers: [DisplayController] = []
     private var scannedWindows: [WindowSnapshot] = []
-    private var collisionEdgeCount = 0
     private var isWindowScannerRunning = false
     private var powerSaveTimer: Timer?
 
@@ -103,9 +102,6 @@ final class MacSnowManager {
         statusMenuController.onSelectOverlayLevel = { [weak self] mode in
             self?.setOverlayLevelMode(mode)
         }
-        statusMenuController.onToggleEdgeDebug = { [weak self] in
-            self?.setEdgeDebugEnabled(!(self?.settings.isEdgeDebugEnabled ?? false))
-        }
         statusMenuController.onToggleDisplay = { [weak self] displayID in
             self?.toggleDisplay(displayID)
         }
@@ -159,7 +155,6 @@ final class MacSnowManager {
         statusMenuController.setAccumulationRate(settings.accumulationRate)
         statusMenuController.setAccumulationStyle(settings.accumulationStyle)
         statusMenuController.setOverlayLevelMode(settings.overlayLevelMode)
-        statusMenuController.setEdgeDebugEnabled(settings.isEdgeDebugEnabled)
         displayDetector.start()
         observePowerNotifications()
         startPowerSaveMonitor()
@@ -365,13 +360,6 @@ final class MacSnowManager {
         applySettingsToDisplays()
     }
 
-    private func setEdgeDebugEnabled(_ enabled: Bool) {
-        settings.isEdgeDebugEnabled = enabled
-        settingsStore.save(settings)
-        statusMenuController.setEdgeDebugEnabled(enabled)
-        applySettingsToDisplays()
-    }
-
     private func clearAccumulation() {
         displayControllers.forEach { $0.clearAccumulation() }
     }
@@ -429,8 +417,10 @@ final class MacSnowManager {
             controller.setAccumulationSpillMode(settings.accumulationSpillMode)
             controller.setAccumulationRate(settings.accumulationRate)
             controller.setAccumulationStyle(settings.accumulationStyle)
-            controller.setEdgeDebugEnabled(settings.isEdgeDebugEnabled)
             controller.setSnowEnabled(enabled)
+            if !displaySettings.isEnabled {
+                controller.clearDisplayContents()
+            }
         }
         applyFullscreenPowerSave()
     }
@@ -445,13 +435,16 @@ final class MacSnowManager {
             partial.union(screen.frame)
         }
         guard !desktopFrame.isNull else {
-            collisionEdgeCount = 0
             return
         }
 
-        collisionEdgeCount = 0
         for controller in displayControllers {
-            collisionEdgeCount += controller.updateWindowSnapshots(scannedWindows, desktopFrame: desktopFrame)
+            let displaySettings = settings.perDisplay[controller.identity.id] ?? MacSnowDisplaySettings()
+            guard displaySettings.isEnabled else {
+                controller.clearWindowTracking()
+                continue
+            }
+            controller.updateWindowSnapshots(scannedWindows, desktopFrame: desktopFrame)
         }
     }
 
@@ -479,7 +472,6 @@ final class MacSnowManager {
 
     private func clearWindowTracking() {
         scannedWindows.removeAll()
-        collisionEdgeCount = 0
         displayControllers.forEach { $0.clearWindowTracking() }
     }
 
@@ -492,7 +484,11 @@ final class MacSnowManager {
     private func applyFullscreenPowerSave() {
         for controller in displayControllers {
             let displaySettings = settings.perDisplay[controller.identity.id] ?? MacSnowDisplaySettings()
-            controller.setSnowEnabled(settings.isSnowEnabled && displaySettings.isEnabled)
+            let enabled = settings.isSnowEnabled && displaySettings.isEnabled
+            controller.setSnowEnabled(enabled)
+            if !displaySettings.isEnabled {
+                controller.clearDisplayContents()
+            }
         }
     }
 
@@ -502,13 +498,6 @@ final class MacSnowManager {
             return (identity: controller.identity, isEnabled: displaySettings.isEnabled)
         }
         statusMenuController.updateDisplays(displays)
-        statusMenuController.updateDebug(
-            overlayCount: displayControllers.count,
-            activeSceneCount: displayControllers.filter(\.isSnowActive).count,
-            density: settings.density,
-            scannedWindowCount: scannedWindows.count,
-            collisionEdgeCount: collisionEdgeCount
-        )
     }
 
     private func observePowerNotifications() {

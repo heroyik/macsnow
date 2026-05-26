@@ -112,12 +112,12 @@ final class DisplayController {
         scene.clearAccumulation()
     }
 
-    func clearWindowTracking() {
-        scene.clearWindowTracking()
+    func clearDisplayContents() {
+        scene.clearDisplayContents()
     }
 
-    func setEdgeDebugEnabled(_ enabled: Bool) {
-        scene.setEdgeDebugEnabled(enabled)
+    func clearWindowTracking() {
+        scene.clearWindowTracking()
     }
 
     @discardableResult

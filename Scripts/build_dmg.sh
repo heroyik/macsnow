@@ -20,6 +20,12 @@ cleanup_staging() {
     rm -rf "$STAGING_DIR"
 }
 
+cleanup_dist_registration() {
+    if [[ -x "$LSREGISTER" && -d "$APP_DIR" ]]; then
+        "$LSREGISTER" -u "$APP_DIR" >/dev/null 2>&1 || true
+    fi
+}
+
 trap cleanup_staging EXIT
 
 bash "$ROOT_DIR/Scripts/build_app_bundle.sh"
@@ -38,6 +44,7 @@ hdiutil create \
     "$DMG_PATH"
 
 cleanup_staging
+cleanup_dist_registration
 trap - EXIT
 
 echo "Built $DMG_PATH"

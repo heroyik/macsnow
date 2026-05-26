@@ -287,7 +287,6 @@ struct MacSnowGlobalSettings: Codable {
     var accumulationSpillMode: AccumulationSpillMode = .off
     var accumulationRate: AccumulationRate = .normal
     var overlayLevelMode: OverlayLevelMode = .normal
-    var isEdgeDebugEnabled: Bool = false
     var accumulationStyle: AccumulationStyle = .layered
     var perDisplay: [String: MacSnowDisplaySettings] = [:]
 
@@ -329,7 +328,6 @@ struct MacSnowGlobalSettings: Codable {
             ?? (isAccumulationSpillEnabled ? .detailed : .off)
         accumulationRate = try container.decodeIfPresent(AccumulationRate.self, forKey: .accumulationRate) ?? .normal
         overlayLevelMode = try container.decodeIfPresent(OverlayLevelMode.self, forKey: .overlayLevelMode) ?? .normal
-        isEdgeDebugEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEdgeDebugEnabled) ?? false
         accumulationStyle = try container.decodeIfPresent(AccumulationStyle.self, forKey: .accumulationStyle) ?? .layered
         perDisplay = try container.decodeIfPresent([String: MacSnowDisplaySettings].self, forKey: .perDisplay) ?? [:]
     }

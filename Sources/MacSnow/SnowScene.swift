@@ -117,7 +117,6 @@ final class SnowScene: SKScene {
     private let giftRoot = SKNode()
     private let accumulationRoot = SKNode()
     private let collapseRoot = SKNode()
-    private let edgeDebugRoot = SKNode()
     private var density: SnowDensity = .normal
     private var windStrength = 0.2
     private var windDirection: WindDirection = .right
@@ -155,7 +154,6 @@ final class SnowScene: SKScene {
     private var accumulationSpillMode: AccumulationSpillMode = .off
     private var accumulationRate: AccumulationRate = .normal
     private var accumulationStyle: AccumulationStyle = .layered
-    private var isEdgeDebugEnabled = false
     private let maximumCollisionEdges = 32
     private let maximumCollapseNodes = 64
     private var currentSceneTime: TimeInterval = 0
@@ -205,7 +203,6 @@ final class SnowScene: SKScene {
         santaRoot.zPosition = 24
         largeFlakeRoot.zPosition = 30
         collapseRoot.zPosition = 32
-        edgeDebugRoot.zPosition = 40
         addChild(celestialRoot)
         addChild(birdRoot)
         addChild(largeFlakeRoot)
@@ -216,7 +213,6 @@ final class SnowScene: SKScene {
         addChild(giftRoot)
         addChild(accumulationRoot)
         addChild(collapseRoot)
-        addChild(edgeDebugRoot)
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -412,6 +408,36 @@ final class SnowScene: SKScene {
         plantedTreeKeys.removeAll()
     }
 
+    func clearDisplayContents() {
+        emitters.forEach { $0.resetSimulation() }
+        celestialRoot.removeAllChildren()
+        birdRoot.removeAllChildren()
+        largeFlakeRoot.removeAllChildren()
+        groundDriftRoot.removeAllChildren()
+        seasonalRoot.removeAllChildren()
+        agentRoot.removeAllChildren()
+        santaRoot.removeAllChildren()
+        giftRoot.removeAllChildren()
+        accumulationRoot.removeAllChildren()
+        collapseRoot.removeAllChildren()
+
+        moonPosition = nil
+        collisionEdges.removeAll()
+        accumulationByEdgeKey.removeAll()
+        edgeByKey.removeAll()
+        lastSpillByEdgeKey.removeAll()
+        fallingLargeFlakes.removeAll()
+        largeFlakeSpawnCarry = 0
+        activeSanta = nil
+        birds.removeAll()
+        fallingGifts.removeAll()
+        groundAgent = nil
+        movingPolarBear = nil
+        movingAnimals.removeAll()
+        groundAgentTarget = nil
+        plantedTreeKeys.removeAll()
+    }
+
     func clearWindowTracking() {
         collisionEdges.removeAll()
         accumulationByEdgeKey.removeAll()
@@ -419,15 +445,9 @@ final class SnowScene: SKScene {
         lastSpillByEdgeKey.removeAll()
         accumulationRoot.removeAllChildren()
         collapseRoot.removeAllChildren()
-        edgeDebugRoot.removeAllChildren()
         fallingLargeFlakes.removeAll()
         largeFlakeRoot.removeAllChildren()
         plantedTreeKeys.removeAll()
-    }
-
-    func setEdgeDebugEnabled(_ enabled: Bool) {
-        isEdgeDebugEnabled = enabled
-        rebuildEdgeDebugNodes()
     }
 
     func updateCollisionEdges(_ edges: [SnowCollisionEdge]) {
@@ -444,9 +464,6 @@ final class SnowScene: SKScene {
 
         updateAccumulation(for: limitedEdges)
         rebuildAccumulationNodes()
-        if didChangeEdges {
-            rebuildEdgeDebugNodes()
-        }
     }
 
     override func didChangeSize(_ oldSize: CGSize) {
@@ -2640,23 +2657,6 @@ final class SnowScene: SKScene {
         }
 
         rebuildAccumulationNodes()
-    }
-
-    private func rebuildEdgeDebugNodes() {
-        edgeDebugRoot.removeAllChildren()
-        guard isEdgeDebugEnabled else {
-            return
-        }
-
-        for edge in collisionEdges {
-            let path = CGMutablePath()
-            path.move(to: CGPoint(x: edge.xRange.lowerBound, y: edge.y))
-            path.addLine(to: CGPoint(x: edge.xRange.upperBound, y: edge.y))
-            let node = SKShapeNode(path: path)
-            node.strokeColor = NSColor.systemRed.withAlphaComponent(0.85)
-            node.lineWidth = 2
-            edgeDebugRoot.addChild(node)
-        }
     }
 
     private func trimCollapseNodesIfNeeded() {
