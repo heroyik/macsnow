@@ -23,6 +23,7 @@ final class StatusMenuController {
     var onToggleReindeer: (() -> Void)?
     var onToggleMoose: (() -> Void)?
     var onTogglePolarBear: (() -> Void)?
+    var onToggleWinterObject: ((WinterObject) -> Void)?
     var onToggleGroundAgent: (() -> Void)?
     var onToggleGifts: (() -> Void)?
     var onSelectObjectAmount: ((ObjectAmount) -> Void)?
@@ -79,6 +80,7 @@ final class StatusMenuController {
     private let overlayLevelMenu = NSMenu()
     private let displaysMenu = NSMenu()
     private var displayItemsByID: [String: NSMenuItem] = [:]
+    private var winterObjectItemsByRawValue: [String: NSMenuItem] = [:]
 
     func configure(isSnowEnabled: Bool) {
         Diag.log("configure() called, isSnowEnabled=\(isSnowEnabled)")
@@ -201,6 +203,7 @@ final class StatusMenuController {
             item.target = self
             visibilityMenu.addItem(item)
         }
+        addWinterObjectMenus()
 
         groundAgentItem.target = self
         visibilityMenu.addItem(groundAgentItem)
@@ -382,6 +385,7 @@ final class StatusMenuController {
         for item in [treesItem, giftTreeItem, snowmanItem, houseItem, reindeerItem, mooseItem, polarBearItem] {
             item.isEnabled = enabled
         }
+        winterObjectItemsByRawValue.values.forEach { $0.isEnabled = enabled }
     }
 
     func setTreesEnabled(_ enabled: Bool) { treesItem.state = enabled ? .on : .off }
@@ -391,6 +395,14 @@ final class StatusMenuController {
     func setReindeerEnabled(_ enabled: Bool) { reindeerItem.state = enabled ? .on : .off }
     func setMooseEnabled(_ enabled: Bool) { mooseItem.state = enabled ? .on : .off }
     func setPolarBearEnabled(_ enabled: Bool) { polarBearItem.state = enabled ? .on : .off }
+
+    func setWinterObjectOptions(_ options: [String: Bool]) {
+        let resolvedOptions = WinterObject.defaultOptions.merging(options) { _, new in new }
+        for object in WinterObject.allCases {
+            winterObjectItemsByRawValue[object.rawValue]?.state = (resolvedOptions[object.rawValue] ?? true) ? .on : .off
+        }
+    }
+
     func setGroundAgentEnabled(_ enabled: Bool) {
         groundAgentItem.state = enabled ? .on : .off
     }
@@ -543,6 +555,17 @@ final class StatusMenuController {
     @objc private func toggleReindeer() { onToggleReindeer?() }
     @objc private func toggleMoose() { onToggleMoose?() }
     @objc private func togglePolarBear() { onTogglePolarBear?() }
+
+    @objc private func toggleWinterObject(_ sender: NSMenuItem) {
+        guard
+            let rawValue = sender.representedObject as? String,
+            let object = WinterObject(rawValue: rawValue)
+        else {
+            return
+        }
+        onToggleWinterObject?(object)
+    }
+
     @objc private func toggleGroundAgent() {
         onToggleGroundAgent?()
     }
@@ -662,6 +685,28 @@ final class StatusMenuController {
             "Light"
         default:
             "Medium"
+        }
+    }
+
+    private func addWinterObjectMenus() {
+        let objectsByGroup = Dictionary(grouping: WinterObject.allCases, by: \.group)
+        for group in WinterObject.Group.allCases {
+            guard let objects = objectsByGroup[group], !objects.isEmpty else {
+                continue
+            }
+
+            let groupMenu = NSMenu()
+            let groupRoot = NSMenuItem(title: group.rawValue, action: nil, keyEquivalent: "")
+            visibilityMenu.addItem(groupRoot)
+            visibilityMenu.setSubmenu(groupMenu, for: groupRoot)
+
+            for object in objects {
+                let item = NSMenuItem(title: object.title, action: #selector(toggleWinterObject(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = object.rawValue
+                groupMenu.addItem(item)
+                winterObjectItemsByRawValue[object.rawValue] = item
+            }
         }
     }
 

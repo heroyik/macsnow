@@ -63,6 +63,9 @@ final class MacSnowManager {
         statusMenuController.onToggleReindeer = { [weak self] in self?.setReindeerEnabled(!(self?.settings.isReindeerEnabled ?? true)) }
         statusMenuController.onToggleMoose = { [weak self] in self?.setMooseEnabled(!(self?.settings.isMooseEnabled ?? true)) }
         statusMenuController.onTogglePolarBear = { [weak self] in self?.setPolarBearEnabled(!(self?.settings.isPolarBearEnabled ?? true)) }
+        statusMenuController.onToggleWinterObject = { [weak self] object in
+            self?.toggleWinterObject(object)
+        }
         statusMenuController.onToggleGroundAgent = { [weak self] in
             self?.setGroundAgentEnabled(!(self?.settings.isGroundAgentEnabled ?? true))
         }
@@ -143,6 +146,7 @@ final class MacSnowManager {
         statusMenuController.setReindeerEnabled(settings.isReindeerEnabled)
         statusMenuController.setMooseEnabled(settings.isMooseEnabled)
         statusMenuController.setPolarBearEnabled(settings.isPolarBearEnabled)
+        statusMenuController.setWinterObjectOptions(settings.winterObjectOptions)
         statusMenuController.setGroundAgentEnabled(settings.isGroundAgentEnabled)
         statusMenuController.setGiftsEnabled(settings.areGiftsEnabled)
         statusMenuController.setObjectAmount(settings.objectAmount)
@@ -272,6 +276,14 @@ final class MacSnowManager {
     private func setReindeerEnabled(_ enabled: Bool) { settings.isReindeerEnabled = enabled; settingsStore.save(settings); statusMenuController.setReindeerEnabled(enabled); applySettingsToDisplays() }
     private func setMooseEnabled(_ enabled: Bool) { settings.isMooseEnabled = enabled; settingsStore.save(settings); statusMenuController.setMooseEnabled(enabled); applySettingsToDisplays() }
     private func setPolarBearEnabled(_ enabled: Bool) { settings.isPolarBearEnabled = enabled; settingsStore.save(settings); statusMenuController.setPolarBearEnabled(enabled); applySettingsToDisplays() }
+
+    private func toggleWinterObject(_ object: WinterObject) {
+        let currentValue = settings.winterObjectOptions[object.rawValue] ?? true
+        settings.winterObjectOptions[object.rawValue] = !currentValue
+        settingsStore.save(settings)
+        statusMenuController.setWinterObjectOptions(settings.winterObjectOptions)
+        applySettingsToDisplays()
+    }
 
     private func setGroundAgentEnabled(_ enabled: Bool) {
         settings.isGroundAgentEnabled = enabled
@@ -403,6 +415,7 @@ final class MacSnowManager {
                 moose: settings.isMooseEnabled,
                 polarBear: settings.isPolarBearEnabled
             )
+            controller.setWinterObjectOptions(settings.winterObjectOptions)
             controller.setGroundAgentEnabled(settings.isGroundAgentEnabled)
             controller.setGiftsEnabled(settings.areGiftsEnabled)
             controller.setObjectAmount(settings.objectAmount)

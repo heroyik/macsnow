@@ -72,6 +72,10 @@ final class DisplayController {
         scene.setSceneryItemOptions(trees: trees, giftTree: giftTree, snowman: snowman, house: house, reindeer: reindeer, moose: moose, polarBear: polarBear)
     }
 
+    func setWinterObjectOptions(_ options: [String: Bool]) {
+        scene.setWinterObjectOptions(options)
+    }
+
     func setGroundAgentEnabled(_ enabled: Bool) {
         scene.setGroundAgentEnabled(enabled)
     }

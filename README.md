@@ -24,12 +24,12 @@ MacSnow is not:
 - A screen recorder.
 - A heavyweight desktop customization suite.
 
-Current repository version: `1.21.82`
+Current repository version: `1.21.84`
 
 Latest generated local release artifact currently available in this checkout:
 
 ```text
-dist/MacSnow-1.21.82.dmg
+dist/MacSnow-1.21.84.dmg
 ```
 
 ## Screenshot
@@ -53,6 +53,24 @@ Modern macOS makes this trickier than it sounds:
 - Overlay windows need to be click-through, transparent, multi-display aware, and polite around fullscreen spaces.
 
 MacSnow leans into that reality. The project now tries hard to keep only one real MacSnow app identity alive.
+
+## What's New In 1.21.84
+
+This patch makes moving objects feel more 2.5D:
+
+- Added a shared depth profile for moving desktop objects so objects near the bottom of the screen render larger, faster, brighter, and in front.
+- Objects farther up the scene now render smaller, slower, dimmer, and behind closer objects.
+- Birds, falling gifts, ground agents, moving winter animals, reindeer, moose, and polar bear movement now use depth-based scale, alpha, z-order, speed, bobbing, and parallax drift.
+- Santa already had route-based perspective scaling, so this release keeps that behavior aligned with the new depth model.
+
+## What's New In 1.21.83
+
+This patch makes the new winter objects controllable from the menu:
+
+- Added grouped `Visibility` submenus for winter objects: `Places`, `Props`, `Holiday`, `Animals`, `Sports`, and `Retro Toys`.
+- Each new object can now be toggled on or off individually, including penguin, igloo, icicles, ski lift, toy train, husky sled, snowboarder, and the rest of the 1.21.82 object set.
+- Winter object visibility is persisted in settings and defaults to enabled for existing users.
+- Disabled winter objects are removed from both static scenery generation and moving object spawning.
 
 ## What's New In 1.21.82
 

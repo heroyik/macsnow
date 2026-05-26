@@ -249,6 +249,123 @@ enum ObjectAmount: String, Codable, CaseIterable {
     }
 }
 
+enum WinterObject: String, Codable, CaseIterable {
+    case igloo
+    case icicles
+    case iceFishingHole
+    case lampPost
+    case snowMound
+    case icePatch
+    case mailbox
+    case signPost
+    case hotCocoa
+    case lantern
+    case candyCane
+    case winterFence
+    case skiLift
+    case owl
+    case snowAngel
+    case snowShovel
+    case mittens
+    case scarf
+    case woolHat
+    case wreath
+    case stocking
+    case bells
+    case christmasLights
+    case toyTrain
+    case chimneySmoke
+    case snowballStack
+    case frostCrystals
+    case penguin
+    case arcticFox
+    case seal
+    case huskySled
+    case skier
+    case snowboarder
+    case wolf
+    case rollingSnowball
+
+    enum Group: String, CaseIterable {
+        case places = "Places"
+        case props = "Props"
+        case holiday = "Holiday"
+        case animals = "Animals"
+        case sports = "Sports"
+        case retro = "Retro Toys"
+    }
+
+    var title: String {
+        switch self {
+        case .igloo: "Igloo"
+        case .icicles: "Icicles"
+        case .iceFishingHole: "Ice Fishing Hole"
+        case .lampPost: "Lamp Post"
+        case .snowMound: "Snow Mound"
+        case .icePatch: "Ice Patch"
+        case .mailbox: "Mailbox"
+        case .signPost: "Sign Post"
+        case .hotCocoa: "Hot Cocoa"
+        case .lantern: "Lantern"
+        case .candyCane: "Candy Cane"
+        case .winterFence: "Winter Fence"
+        case .skiLift: "Ski Lift"
+        case .owl: "Owl"
+        case .snowAngel: "Snow Angel"
+        case .snowShovel: "Snow Shovel"
+        case .mittens: "Mittens"
+        case .scarf: "Scarf"
+        case .woolHat: "Wool Hat"
+        case .wreath: "Wreath"
+        case .stocking: "Stocking"
+        case .bells: "Bells"
+        case .christmasLights: "Christmas Lights"
+        case .toyTrain: "Toy Train"
+        case .chimneySmoke: "Chimney Smoke"
+        case .snowballStack: "Snowball Stack"
+        case .frostCrystals: "Frost Crystals"
+        case .penguin: "Penguin"
+        case .arcticFox: "Arctic Fox"
+        case .seal: "Seal"
+        case .huskySled: "Husky Sled"
+        case .skier: "Skier"
+        case .snowboarder: "Snowboarder"
+        case .wolf: "Wolf Silhouette"
+        case .rollingSnowball: "Rolling Snowball"
+        }
+    }
+
+    var group: Group {
+        switch self {
+        case .igloo, .iceFishingHole, .lampPost, .winterFence, .skiLift:
+            .places
+        case .snowMound, .icePatch, .mailbox, .signPost, .hotCocoa, .lantern, .snowAngel, .snowShovel, .mittens, .scarf, .woolHat, .frostCrystals:
+            .props
+        case .candyCane, .wreath, .stocking, .bells, .christmasLights, .chimneySmoke:
+            .holiday
+        case .penguin, .arcticFox, .seal, .huskySled, .owl, .wolf:
+            .animals
+        case .skier, .snowboarder:
+            .sports
+        case .toyTrain, .snowballStack, .rollingSnowball, .icicles:
+            .retro
+        }
+    }
+
+    var isMoving: Bool {
+        switch self {
+        case .penguin, .arcticFox, .seal, .huskySled, .skier, .snowboarder, .wolf, .rollingSnowball:
+            true
+        default:
+            false
+        }
+    }
+
+    static var defaultOptions: [String: Bool] {
+        Dictionary(uniqueKeysWithValues: allCases.map { ($0.rawValue, true) })
+    }
+}
+
 struct MacSnowDisplaySettings: Codable {
     var isEnabled: Bool = true
 }
@@ -277,6 +394,7 @@ struct MacSnowGlobalSettings: Codable {
     var isPolarBearEnabled: Bool = true
     var isGroundAgentEnabled: Bool = true
     var areGiftsEnabled: Bool = true
+    var winterObjectOptions: [String: Bool] = WinterObject.defaultOptions
     var objectAmount: ObjectAmount = .normal
     var santaStyle: SantaStyle = .big
     var santaSpeed: SantaSpeed = .normal
@@ -317,6 +435,8 @@ struct MacSnowGlobalSettings: Codable {
         isPolarBearEnabled = try container.decodeIfPresent(Bool.self, forKey: .isPolarBearEnabled) ?? true
         isGroundAgentEnabled = try container.decodeIfPresent(Bool.self, forKey: .isGroundAgentEnabled) ?? true
         areGiftsEnabled = try container.decodeIfPresent(Bool.self, forKey: .areGiftsEnabled) ?? true
+        let decodedWinterObjectOptions = try container.decodeIfPresent([String: Bool].self, forKey: .winterObjectOptions) ?? [:]
+        winterObjectOptions = WinterObject.defaultOptions.merging(decodedWinterObjectOptions) { _, new in new }
         objectAmount = try container.decodeIfPresent(ObjectAmount.self, forKey: .objectAmount) ?? .normal
         santaStyle = try container.decodeIfPresent(SantaStyle.self, forKey: .santaStyle) ?? .big
         santaSpeed = try container.decodeIfPresent(SantaSpeed.self, forKey: .santaSpeed) ?? .normal
