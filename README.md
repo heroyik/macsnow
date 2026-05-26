@@ -24,12 +24,12 @@ MacSnow is not:
 - A screen recorder.
 - A heavyweight desktop customization suite.
 
-Current repository version: `1.21.81`
+Current repository version: `1.21.82`
 
 Latest generated local release artifact currently available in this checkout:
 
 ```text
-dist/MacSnow-1.21.81.dmg
+dist/MacSnow-1.21.82.dmg
 ```
 
 ## Screenshot
@@ -53,6 +53,15 @@ Modern macOS makes this trickier than it sounds:
 - Overlay windows need to be click-through, transparent, multi-display aware, and polite around fullscreen spaces.
 
 MacSnow leans into that reality. The project now tries hard to keep only one real MacSnow app identity alive.
+
+## What's New In 1.21.82
+
+This patch adds a bigger cold-weather toy box while keeping the controls simple:
+
+- Added new scenery objects: igloo, icicle clusters, ice fishing hole, lamp post, snow mound, ice patch, snowy mailbox, sign post, hot cocoa mug, lantern, candy cane, winter fence, ski lift chair, owl, snow angel, snow shovel, mittens, scarf, wool hat, wreath, stocking, bells, Christmas lights, toy train, chimney smoke, snowball stack, and frost-corner crystals.
+- Added new moving winter characters: penguin, arctic fox, seal, husky sled, skier, snowboarder, distant wolf silhouette, and rolling snowball.
+- New objects follow the existing `Scenery`, `Ground Agent`, `Object Amount`, and visual scale controls instead of adding a giant menu full of one-off switches.
+- The new assets are drawn with lightweight SpriteKit primitive shapes, so they stay zero-dependency and match the existing desktop-toy style.
 
 ## What's New In 1.21.81
 

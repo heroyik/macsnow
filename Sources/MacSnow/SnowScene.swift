@@ -55,7 +55,7 @@ final class SnowScene: SKScene {
     }
 
     private struct MovingAnimal {
-        let node: SKSpriteNode
+        let node: SKNode
         var target: CGPoint
         var velocity: CGVector
         var baseScale: CGFloat
@@ -1505,6 +1505,7 @@ final class SnowScene: SKScene {
         if isHouseEnabled {
             addScenerySprite(named: "huis4.xpm", at: randomObjectPoint(yBias: 0.12), scale: 0.5)
         }
+        addWinterSceneryObjects()
         if areGiftsEnabled {
             let giftCount = max(1, Int((2.0 * objectAmount.multiplier).rounded()))
             for index in 0..<giftCount {
@@ -1699,6 +1700,14 @@ final class SnowScene: SKScene {
         if isMooseEnabled {
             addMovingAnimal(named: "eland.xpm", scale: 0.45)
         }
+        addMovingAnimal(node: makePenguinNode(), scale: 0.82, speed: CGFloat.random(in: 18...30), directionFlip: 1)
+        addMovingAnimal(node: makeArcticFoxNode(), scale: 0.72, speed: CGFloat.random(in: 38...56), directionFlip: 1)
+        addMovingAnimal(node: makeSealNode(), scale: 0.76, speed: CGFloat.random(in: 14...24), directionFlip: 1)
+        addMovingAnimal(node: makeHuskySledNode(), scale: 0.74, speed: CGFloat.random(in: 32...48), directionFlip: 1)
+        addMovingAnimal(node: makeSkierNode(), scale: 0.7, speed: CGFloat.random(in: 42...62), directionFlip: 1)
+        addMovingAnimal(node: makeSnowboarderNode(), scale: 0.7, speed: CGFloat.random(in: 40...60), directionFlip: 1)
+        addMovingAnimal(node: makeWolfSilhouetteNode(), scale: 0.72, speed: CGFloat.random(in: 30...44), directionFlip: 1)
+        addMovingAnimal(node: makeRollingSnowballNode(), scale: 0.86, speed: CGFloat.random(in: 24...38), directionFlip: 1)
     }
 
     private func addMovingAnimal(named name: String, scale: CGFloat) {
@@ -1710,18 +1719,24 @@ final class SnowScene: SKScene {
         sprite.anchorPoint = CGPoint(x: 0.5, y: 0)
         sprite.setScale(scale)
         sprite.alpha = 0.9
+        addMovingAnimal(node: sprite, scale: scale, speed: name == "eland.xpm" ? CGFloat.random(in: 22...34) : CGFloat.random(in: 26...42), directionFlip: name == "eland.xpm" ? -1 : 1)
+    }
+
+    private func addMovingAnimal(node: SKNode, scale: CGFloat, speed: CGFloat, directionFlip: CGFloat) {
+        node.name = "movingAnimal"
         let start = randomObjectPoint(yBias: CGFloat.random(in: 0.1...0.45))
         let target = randomObjectPoint(yBias: CGFloat.random(in: 0.1...0.55))
-        let directionFlip: CGFloat = name == "eland.xpm" ? -1 : 1
-        sprite.position = start
-        sprite.xScale = (target.x >= start.x ? abs(sprite.xScale) : -abs(sprite.xScale)) * directionFlip
-        agentRoot.addChild(sprite)
+        node.position = start
+        node.setScale(scale)
+        node.xScale = (target.x >= start.x ? abs(node.xScale) : -abs(node.xScale)) * directionFlip
+        node.alpha = 0.9
+        agentRoot.addChild(node)
         movingAnimals.append(MovingAnimal(
-            node: sprite,
+            node: node,
             target: target,
             velocity: CGVector(dx: CGFloat.random(in: -16...16), dy: CGFloat.random(in: -12...12)),
             baseScale: scale,
-            cruiseSpeed: name == "eland.xpm" ? CGFloat.random(in: 22...34) : CGFloat.random(in: 26...42),
+            cruiseSpeed: speed,
             directionFlip: directionFlip,
             bobPhase: CGFloat.random(in: 0...(.pi * 2)),
             stridePhase: CGFloat.random(in: 0...(.pi * 2)),
@@ -1990,6 +2005,632 @@ final class SnowScene: SKScene {
         ribbon.strokeColor = .clear
         gift.addChild(ribbon)
         seasonalRoot.addChild(gift)
+    }
+
+    private func addWinterSceneryObjects() {
+        let baseCount = max(6, Int((12.0 * objectAmount.multiplier).rounded()))
+        let makers: [(CGPoint) -> Void] = [
+            addIgloo,
+            addIcicleCluster,
+            addIceFishingHole,
+            addLampPost,
+            addSnowMound,
+            addIcePatch,
+            addMailbox,
+            addSignPost,
+            addHotCocoa,
+            addLantern,
+            addCandyCane,
+            addWinterFence,
+            addSkiLift,
+            addOwl,
+            addSnowAngel,
+            addSnowShovel,
+            addMittens,
+            addScarf,
+            addWoolHat,
+            addWreath,
+            addStocking,
+            addBellPair,
+            addChristmasLights,
+            addToyTrain,
+            addChimneySmoke,
+            addSnowballStack
+        ]
+        for index in 0..<min(baseCount, makers.count) {
+            makers[index](randomObjectPoint(yBias: CGFloat.random(in: 0.02...0.32)))
+        }
+        addFrostCorner()
+    }
+
+    private func addIgloo(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.78)
+        let domePath = CGMutablePath()
+        domePath.move(to: CGPoint(x: -28, y: 0))
+        domePath.addQuadCurve(to: CGPoint(x: 28, y: 0), control: CGPoint(x: 0, y: 36))
+        domePath.closeSubpath()
+        let dome = SKShapeNode(path: domePath)
+        dome.fillColor = NSColor(calibratedRed: 0.86, green: 0.94, blue: 1.0, alpha: 0.78)
+        dome.strokeColor = NSColor.white.withAlphaComponent(0.55)
+        dome.lineWidth = 1
+        node.addChild(dome)
+        for y in stride(from: CGFloat(8), through: 24, by: 8) {
+            let line = SKShapeNode(rect: CGRect(x: -24 + y * 0.25, y: y, width: 48 - y * 0.5, height: 1), cornerRadius: 0.5)
+            line.fillColor = NSColor.white.withAlphaComponent(0.38)
+            line.strokeColor = .clear
+            node.addChild(line)
+        }
+        let door = SKShapeNode(ellipseIn: CGRect(x: -9, y: -1, width: 18, height: 17))
+        door.fillColor = NSColor(calibratedWhite: 0.18, alpha: 0.48)
+        door.strokeColor = NSColor.white.withAlphaComponent(0.25)
+        node.addChild(door)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addIcicleCluster(at point: CGPoint) {
+        let node = SKNode()
+        node.position = CGPoint(x: point.x, y: min(size.height - 24, point.y + CGFloat.random(in: 80...180)))
+        node.setScale(visualScale.value)
+        for index in 0..<5 {
+            let length = CGFloat.random(in: 14...34)
+            let x = CGFloat(index - 2) * CGFloat.random(in: 5...9)
+            let path = CGMutablePath()
+            path.move(to: CGPoint(x: x - 3, y: 0))
+            path.addLine(to: CGPoint(x: x + 3, y: 0))
+            path.addLine(to: CGPoint(x: x, y: -length))
+            path.closeSubpath()
+            let icicle = SKShapeNode(path: path)
+            icicle.fillColor = NSColor(calibratedRed: 0.82, green: 0.93, blue: 1.0, alpha: 0.66)
+            icicle.strokeColor = NSColor.white.withAlphaComponent(0.5)
+            node.addChild(icicle)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addIceFishingHole(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value)
+        let hole = SKShapeNode(ellipseIn: CGRect(x: -18, y: -4, width: 36, height: 13))
+        hole.fillColor = NSColor(calibratedRed: 0.05, green: 0.22, blue: 0.32, alpha: 0.62)
+        hole.strokeColor = NSColor.white.withAlphaComponent(0.34)
+        node.addChild(hole)
+        let rod = SKShapeNode(rect: CGRect(x: 10, y: 2, width: 2, height: 34), cornerRadius: 1)
+        rod.fillColor = NSColor.brown.withAlphaComponent(0.72)
+        rod.strokeColor = .clear
+        rod.zRotation = -0.48
+        node.addChild(rod)
+        let line = SKShapeNode(rect: CGRect(x: 15, y: 0, width: 1, height: 24))
+        line.fillColor = NSColor.white.withAlphaComponent(0.42)
+        line.strokeColor = .clear
+        node.addChild(line)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addLampPost(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.85)
+        let post = SKShapeNode(rect: CGRect(x: -2, y: 0, width: 4, height: 48), cornerRadius: 1)
+        post.fillColor = NSColor(calibratedWhite: 0.16, alpha: 0.72)
+        post.strokeColor = .clear
+        node.addChild(post)
+        let glow = SKShapeNode(circleOfRadius: 18)
+        glow.position = CGPoint(x: 0, y: 50)
+        glow.fillColor = NSColor.systemYellow.withAlphaComponent(0.14)
+        glow.strokeColor = .clear
+        node.addChild(glow)
+        let lamp = SKShapeNode(circleOfRadius: 6)
+        lamp.position = glow.position
+        lamp.fillColor = NSColor.systemYellow.withAlphaComponent(0.76)
+        lamp.strokeColor = NSColor.white.withAlphaComponent(0.4)
+        node.addChild(lamp)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addSnowMound(at point: CGPoint) {
+        let mound = SKShapeNode(ellipseIn: CGRect(x: -28, y: -2, width: 56, height: 16))
+        mound.position = point
+        mound.fillColor = NSColor.white.withAlphaComponent(0.64)
+        mound.strokeColor = NSColor.white.withAlphaComponent(0.32)
+        mound.setScale(visualScale.value)
+        seasonalRoot.addChild(mound)
+    }
+
+    private func addIcePatch(at point: CGPoint) {
+        let patch = SKShapeNode(ellipseIn: CGRect(x: -32, y: -3, width: 64, height: 13))
+        patch.position = point
+        patch.fillColor = NSColor(calibratedRed: 0.54, green: 0.83, blue: 1.0, alpha: 0.24)
+        patch.strokeColor = NSColor.white.withAlphaComponent(0.28)
+        patch.setScale(visualScale.value)
+        seasonalRoot.addChild(patch)
+    }
+
+    private func addMailbox(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.75)
+        let post = SKShapeNode(rect: CGRect(x: -2, y: 0, width: 4, height: 18), cornerRadius: 1)
+        post.fillColor = NSColor.brown.withAlphaComponent(0.65)
+        post.strokeColor = .clear
+        node.addChild(post)
+        let box = SKShapeNode(rect: CGRect(x: -14, y: 18, width: 28, height: 14), cornerRadius: 5)
+        box.fillColor = NSColor.systemRed.withAlphaComponent(0.72)
+        box.strokeColor = NSColor.white.withAlphaComponent(0.32)
+        node.addChild(box)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addSignPost(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.78)
+        let post = SKShapeNode(rect: CGRect(x: -2, y: 0, width: 4, height: 38), cornerRadius: 1)
+        post.fillColor = NSColor.brown.withAlphaComponent(0.72)
+        post.strokeColor = .clear
+        node.addChild(post)
+        let sign = SKShapeNode(rect: CGRect(x: -24, y: 28, width: 48, height: 14), cornerRadius: 2)
+        sign.fillColor = NSColor(calibratedRed: 0.58, green: 0.28, blue: 0.12, alpha: 0.74)
+        sign.strokeColor = NSColor.white.withAlphaComponent(0.22)
+        node.addChild(sign)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addHotCocoa(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.65)
+        let mug = SKShapeNode(rect: CGRect(x: -8, y: 0, width: 16, height: 14), cornerRadius: 3)
+        mug.fillColor = NSColor.systemRed.withAlphaComponent(0.78)
+        mug.strokeColor = NSColor.white.withAlphaComponent(0.24)
+        node.addChild(mug)
+        let handle = SKShapeNode(ellipseIn: CGRect(x: 6, y: 3, width: 10, height: 8))
+        handle.fillColor = .clear
+        handle.strokeColor = NSColor.systemRed.withAlphaComponent(0.68)
+        handle.lineWidth = 2
+        node.addChild(handle)
+        for x in [-4, 0, 4] {
+            let steam = SKShapeNode(rect: CGRect(x: CGFloat(x), y: 17, width: 1, height: 10), cornerRadius: 0.5)
+            steam.fillColor = NSColor.white.withAlphaComponent(0.28)
+            steam.strokeColor = .clear
+            node.addChild(steam)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addLantern(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.7)
+        let frame = SKShapeNode(rect: CGRect(x: -8, y: 0, width: 16, height: 22), cornerRadius: 3)
+        frame.fillColor = NSColor(calibratedWhite: 0.12, alpha: 0.54)
+        frame.strokeColor = NSColor.white.withAlphaComponent(0.18)
+        node.addChild(frame)
+        let light = SKShapeNode(circleOfRadius: 7)
+        light.position = CGPoint(x: 0, y: 10)
+        light.fillColor = NSColor.systemYellow.withAlphaComponent(0.58)
+        light.strokeColor = .clear
+        node.addChild(light)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addCandyCane(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.72)
+        let cane = SKShapeNode(rect: CGRect(x: -2, y: 0, width: 4, height: 34), cornerRadius: 2)
+        cane.fillColor = NSColor.white.withAlphaComponent(0.82)
+        cane.strokeColor = NSColor.systemRed.withAlphaComponent(0.6)
+        cane.lineWidth = 1.4
+        node.addChild(cane)
+        for y in stride(from: CGFloat(4), through: 28, by: 8) {
+            let stripe = SKShapeNode(rect: CGRect(x: -3, y: y, width: 6, height: 3), cornerRadius: 1)
+            stripe.fillColor = NSColor.systemRed.withAlphaComponent(0.72)
+            stripe.strokeColor = .clear
+            node.addChild(stripe)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addWinterFence(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.8)
+        for x in stride(from: CGFloat(-30), through: 30, by: 15) {
+            let post = SKShapeNode(rect: CGRect(x: x - 2, y: 0, width: 4, height: 22), cornerRadius: 1)
+            post.fillColor = NSColor.brown.withAlphaComponent(0.52)
+            post.strokeColor = .clear
+            node.addChild(post)
+        }
+        for y in [7, 16] as [CGFloat] {
+            let rail = SKShapeNode(rect: CGRect(x: -34, y: y, width: 68, height: 3), cornerRadius: 1)
+            rail.fillColor = NSColor.brown.withAlphaComponent(0.44)
+            rail.strokeColor = .clear
+            node.addChild(rail)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addSkiLift(at point: CGPoint) {
+        let node = SKNode()
+        node.position = CGPoint(x: point.x, y: min(size.height - 90, max(point.y + 70, size.height * 0.36)))
+        node.setScale(visualScale.value * 0.78)
+        let cable = SKShapeNode(rect: CGRect(x: -42, y: 30, width: 84, height: 1), cornerRadius: 0.5)
+        cable.fillColor = NSColor.white.withAlphaComponent(0.32)
+        cable.strokeColor = .clear
+        node.addChild(cable)
+        let hanger = SKShapeNode(rect: CGRect(x: -1, y: 10, width: 2, height: 20), cornerRadius: 0.5)
+        hanger.fillColor = NSColor.white.withAlphaComponent(0.45)
+        hanger.strokeColor = .clear
+        node.addChild(hanger)
+        let chair = SKShapeNode(rect: CGRect(x: -14, y: 4, width: 28, height: 6), cornerRadius: 2)
+        chair.fillColor = NSColor.systemBlue.withAlphaComponent(0.52)
+        chair.strokeColor = NSColor.white.withAlphaComponent(0.22)
+        node.addChild(chair)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addOwl(at point: CGPoint) {
+        let node = SKNode()
+        node.position = CGPoint(x: point.x, y: point.y + 22)
+        node.setScale(visualScale.value * 0.68)
+        let body = SKShapeNode(ellipseIn: CGRect(x: -10, y: 0, width: 20, height: 25))
+        body.fillColor = NSColor(calibratedWhite: 0.52, alpha: 0.72)
+        body.strokeColor = NSColor.white.withAlphaComponent(0.22)
+        node.addChild(body)
+        for x in [-4, 4] as [CGFloat] {
+            let eye = SKShapeNode(circleOfRadius: 2.5)
+            eye.position = CGPoint(x: x, y: 17)
+            eye.fillColor = NSColor.systemYellow.withAlphaComponent(0.78)
+            eye.strokeColor = .clear
+            node.addChild(eye)
+        }
+        let perch = SKShapeNode(rect: CGRect(x: -16, y: -1, width: 32, height: 3), cornerRadius: 1)
+        perch.fillColor = NSColor.brown.withAlphaComponent(0.5)
+        perch.strokeColor = .clear
+        node.addChild(perch)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addSnowAngel(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.8)
+        let body = SKShapeNode(ellipseIn: CGRect(x: -5, y: -2, width: 10, height: 22))
+        body.fillColor = NSColor.white.withAlphaComponent(0.34)
+        body.strokeColor = NSColor.white.withAlphaComponent(0.28)
+        node.addChild(body)
+        for x in [-16, 8] as [CGFloat] {
+            let wing = SKShapeNode(ellipseIn: CGRect(x: x, y: 2, width: 16, height: 22))
+            wing.fillColor = NSColor.white.withAlphaComponent(0.24)
+            wing.strokeColor = NSColor.white.withAlphaComponent(0.18)
+            node.addChild(wing)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addSnowShovel(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.75)
+        let handle = SKShapeNode(rect: CGRect(x: -1, y: 4, width: 2, height: 40), cornerRadius: 1)
+        handle.fillColor = NSColor.brown.withAlphaComponent(0.68)
+        handle.strokeColor = .clear
+        handle.zRotation = -0.42
+        node.addChild(handle)
+        let blade = SKShapeNode(rect: CGRect(x: -9, y: 0, width: 18, height: 10), cornerRadius: 3)
+        blade.fillColor = NSColor.systemBlue.withAlphaComponent(0.55)
+        blade.strokeColor = NSColor.white.withAlphaComponent(0.25)
+        node.addChild(blade)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addMittens(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.62)
+        for x in [-7, 7] as [CGFloat] {
+            let mitten = SKShapeNode(ellipseIn: CGRect(x: x - 6, y: 0, width: 12, height: 16))
+            mitten.fillColor = NSColor.systemRed.withAlphaComponent(0.72)
+            mitten.strokeColor = NSColor.white.withAlphaComponent(0.2)
+            node.addChild(mitten)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addScarf(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.7)
+        let wrap = SKShapeNode(rect: CGRect(x: -18, y: 8, width: 36, height: 6), cornerRadius: 3)
+        wrap.fillColor = NSColor.systemPurple.withAlphaComponent(0.7)
+        wrap.strokeColor = .clear
+        node.addChild(wrap)
+        let tail = SKShapeNode(rect: CGRect(x: 9, y: -8, width: 7, height: 20), cornerRadius: 2)
+        tail.fillColor = NSColor.systemPurple.withAlphaComponent(0.64)
+        tail.strokeColor = .clear
+        node.addChild(tail)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addWoolHat(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.72)
+        let cap = SKShapeNode(ellipseIn: CGRect(x: -12, y: 0, width: 24, height: 15))
+        cap.fillColor = NSColor.systemBlue.withAlphaComponent(0.72)
+        cap.strokeColor = NSColor.white.withAlphaComponent(0.2)
+        node.addChild(cap)
+        let pom = SKShapeNode(circleOfRadius: 4)
+        pom.position = CGPoint(x: 0, y: 16)
+        pom.fillColor = NSColor.white.withAlphaComponent(0.82)
+        pom.strokeColor = .clear
+        node.addChild(pom)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addWreath(at point: CGPoint) {
+        let wreath = SKShapeNode(ellipseIn: CGRect(x: -13, y: 0, width: 26, height: 26))
+        wreath.position = point
+        wreath.fillColor = .clear
+        wreath.strokeColor = NSColor.systemGreen.withAlphaComponent(0.72)
+        wreath.lineWidth = 5
+        wreath.setScale(visualScale.value * 0.68)
+        seasonalRoot.addChild(wreath)
+        let berry = SKShapeNode(circleOfRadius: 3)
+        berry.position = CGPoint(x: point.x + 7, y: point.y + 8)
+        berry.fillColor = NSColor.systemRed.withAlphaComponent(0.78)
+        berry.strokeColor = .clear
+        seasonalRoot.addChild(berry)
+    }
+
+    private func addStocking(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.65)
+        let leg = SKShapeNode(rect: CGRect(x: -7, y: 8, width: 12, height: 20), cornerRadius: 3)
+        leg.fillColor = NSColor.systemRed.withAlphaComponent(0.72)
+        leg.strokeColor = .clear
+        node.addChild(leg)
+        let foot = SKShapeNode(rect: CGRect(x: -7, y: 0, width: 20, height: 10), cornerRadius: 4)
+        foot.fillColor = NSColor.systemRed.withAlphaComponent(0.72)
+        foot.strokeColor = .clear
+        node.addChild(foot)
+        seasonalRoot.addChild(node)
+    }
+
+    private func addBellPair(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.62)
+        for x in [-6, 6] as [CGFloat] {
+            let bell = SKShapeNode(ellipseIn: CGRect(x: x - 5, y: 0, width: 10, height: 12))
+            bell.fillColor = NSColor.systemYellow.withAlphaComponent(0.72)
+            bell.strokeColor = NSColor.white.withAlphaComponent(0.2)
+            node.addChild(bell)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addChristmasLights(at point: CGPoint) {
+        let node = SKNode()
+        node.position = CGPoint(x: point.x, y: point.y + 28)
+        node.setScale(visualScale.value * 0.75)
+        let cord = SKShapeNode(rect: CGRect(x: -34, y: 8, width: 68, height: 1), cornerRadius: 0.5)
+        cord.fillColor = NSColor(calibratedWhite: 0.12, alpha: 0.38)
+        cord.strokeColor = .clear
+        node.addChild(cord)
+        let colors: [NSColor] = [.systemRed, .systemGreen, .systemBlue, .systemYellow]
+        for index in 0..<6 {
+            let bulb = SKShapeNode(circleOfRadius: 3)
+            bulb.position = CGPoint(x: -28 + CGFloat(index) * 11, y: 5)
+            bulb.fillColor = colors[index % colors.count].withAlphaComponent(0.78)
+            bulb.strokeColor = .clear
+            node.addChild(bulb)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addToyTrain(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.58)
+        for index in 0..<4 {
+            let car = SKShapeNode(rect: CGRect(x: CGFloat(index * 22), y: 6, width: 18, height: 12), cornerRadius: 3)
+            car.fillColor = [NSColor.systemRed, .systemBlue, .systemGreen, .systemOrange][index].withAlphaComponent(0.72)
+            car.strokeColor = NSColor.white.withAlphaComponent(0.2)
+            node.addChild(car)
+            let wheel = SKShapeNode(circleOfRadius: 2.5)
+            wheel.position = CGPoint(x: CGFloat(index * 22 + 9), y: 4)
+            wheel.fillColor = NSColor.black.withAlphaComponent(0.42)
+            wheel.strokeColor = .clear
+            node.addChild(wheel)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addChimneySmoke(at point: CGPoint) {
+        let node = SKNode()
+        node.position = CGPoint(x: point.x, y: point.y + 28)
+        node.setScale(visualScale.value * 0.7)
+        let chimney = SKShapeNode(rect: CGRect(x: -5, y: 0, width: 10, height: 18), cornerRadius: 1)
+        chimney.fillColor = NSColor.brown.withAlphaComponent(0.56)
+        chimney.strokeColor = .clear
+        node.addChild(chimney)
+        for index in 0..<3 {
+            let puff = SKShapeNode(circleOfRadius: CGFloat(5 + index * 2))
+            puff.position = CGPoint(x: CGFloat(index * 6 - 5), y: CGFloat(24 + index * 12))
+            puff.fillColor = NSColor.white.withAlphaComponent(0.16)
+            puff.strokeColor = .clear
+            node.addChild(puff)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addSnowballStack(at point: CGPoint) {
+        let node = SKNode()
+        node.position = point
+        node.setScale(visualScale.value * 0.72)
+        for index in 0..<3 {
+            let ball = SKShapeNode(circleOfRadius: CGFloat(7 - index))
+            ball.position = CGPoint(x: CGFloat(index * 10), y: CGFloat(index * 4))
+            ball.fillColor = NSColor.white.withAlphaComponent(0.74)
+            ball.strokeColor = NSColor.white.withAlphaComponent(0.28)
+            node.addChild(ball)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func addFrostCorner() {
+        let node = SKNode()
+        node.position = CGPoint(x: size.width - 44, y: size.height - 56)
+        node.alpha = 0.42
+        for index in 0..<6 {
+            let ray = SKShapeNode(rect: CGRect(x: 0, y: 0, width: CGFloat.random(in: 14...32), height: 1), cornerRadius: 0.5)
+            ray.fillColor = NSColor(calibratedRed: 0.82, green: 0.94, blue: 1.0, alpha: 0.42)
+            ray.strokeColor = .clear
+            ray.zRotation = CGFloat(index) * .pi / 6
+            node.addChild(ray)
+        }
+        seasonalRoot.addChild(node)
+    }
+
+    private func makePenguinNode() -> SKNode {
+        let node = SKNode()
+        let body = SKShapeNode(ellipseIn: CGRect(x: -10, y: 0, width: 20, height: 28))
+        body.fillColor = NSColor.black.withAlphaComponent(0.82)
+        body.strokeColor = .clear
+        node.addChild(body)
+        let belly = SKShapeNode(ellipseIn: CGRect(x: -6, y: 4, width: 12, height: 18))
+        belly.fillColor = NSColor.white.withAlphaComponent(0.86)
+        belly.strokeColor = .clear
+        node.addChild(belly)
+        let beak = SKShapeNode(rect: CGRect(x: 7, y: 18, width: 8, height: 4), cornerRadius: 1)
+        beak.fillColor = NSColor.systemOrange.withAlphaComponent(0.86)
+        beak.strokeColor = .clear
+        node.addChild(beak)
+        return node
+    }
+
+    private func makeArcticFoxNode() -> SKNode {
+        let node = SKNode()
+        let body = SKShapeNode(ellipseIn: CGRect(x: -17, y: 4, width: 34, height: 13))
+        body.fillColor = NSColor.white.withAlphaComponent(0.82)
+        body.strokeColor = NSColor.white.withAlphaComponent(0.28)
+        node.addChild(body)
+        let head = SKShapeNode(ellipseIn: CGRect(x: 11, y: 10, width: 13, height: 11))
+        head.fillColor = NSColor.white.withAlphaComponent(0.84)
+        head.strokeColor = .clear
+        node.addChild(head)
+        let tail = SKShapeNode(ellipseIn: CGRect(x: -28, y: 8, width: 15, height: 8))
+        tail.fillColor = NSColor.white.withAlphaComponent(0.72)
+        tail.strokeColor = .clear
+        node.addChild(tail)
+        return node
+    }
+
+    private func makeSealNode() -> SKNode {
+        let node = SKNode()
+        let body = SKShapeNode(ellipseIn: CGRect(x: -20, y: 0, width: 40, height: 16))
+        body.fillColor = NSColor(calibratedWhite: 0.72, alpha: 0.72)
+        body.strokeColor = NSColor.white.withAlphaComponent(0.25)
+        node.addChild(body)
+        let head = SKShapeNode(circleOfRadius: 8)
+        head.position = CGPoint(x: 18, y: 10)
+        head.fillColor = NSColor(calibratedWhite: 0.76, alpha: 0.78)
+        head.strokeColor = .clear
+        node.addChild(head)
+        return node
+    }
+
+    private func makeHuskySledNode() -> SKNode {
+        let node = SKNode()
+        for index in 0..<2 {
+            let dog = SKShapeNode(ellipseIn: CGRect(x: CGFloat(index * 18), y: 5, width: 16, height: 9))
+            dog.fillColor = index == 0 ? NSColor.white.withAlphaComponent(0.78) : NSColor.gray.withAlphaComponent(0.72)
+            dog.strokeColor = .clear
+            node.addChild(dog)
+        }
+        let sled = SKShapeNode(rect: CGRect(x: -28, y: 0, width: 24, height: 6), cornerRadius: 2)
+        sled.fillColor = NSColor.brown.withAlphaComponent(0.68)
+        sled.strokeColor = NSColor.white.withAlphaComponent(0.2)
+        node.addChild(sled)
+        return node
+    }
+
+    private func makeSkierNode() -> SKNode {
+        let node = SKNode()
+        let body = SKShapeNode(rect: CGRect(x: -4, y: 10, width: 8, height: 15), cornerRadius: 3)
+        body.fillColor = NSColor.systemBlue.withAlphaComponent(0.76)
+        body.strokeColor = .clear
+        node.addChild(body)
+        let head = SKShapeNode(circleOfRadius: 4)
+        head.position = CGPoint(x: 0, y: 28)
+        head.fillColor = NSColor.white.withAlphaComponent(0.82)
+        head.strokeColor = .clear
+        node.addChild(head)
+        for y in [0, 4] as [CGFloat] {
+            let ski = SKShapeNode(rect: CGRect(x: -16, y: y, width: 34, height: 2), cornerRadius: 1)
+            ski.fillColor = NSColor.white.withAlphaComponent(0.74)
+            ski.strokeColor = .clear
+            ski.zRotation = -0.12
+            node.addChild(ski)
+        }
+        return node
+    }
+
+    private func makeSnowboarderNode() -> SKNode {
+        let node = SKNode()
+        let board = SKShapeNode(rect: CGRect(x: -18, y: 0, width: 36, height: 4), cornerRadius: 2)
+        board.fillColor = NSColor.systemPurple.withAlphaComponent(0.72)
+        board.strokeColor = .clear
+        node.addChild(board)
+        let body = SKShapeNode(rect: CGRect(x: -5, y: 6, width: 10, height: 16), cornerRadius: 4)
+        body.fillColor = NSColor.systemGreen.withAlphaComponent(0.76)
+        body.strokeColor = .clear
+        body.zRotation = -0.18
+        node.addChild(body)
+        let head = SKShapeNode(circleOfRadius: 4)
+        head.position = CGPoint(x: 2, y: 25)
+        head.fillColor = NSColor.white.withAlphaComponent(0.82)
+        head.strokeColor = .clear
+        node.addChild(head)
+        return node
+    }
+
+    private func makeWolfSilhouetteNode() -> SKNode {
+        let node = SKNode()
+        let body = SKShapeNode(ellipseIn: CGRect(x: -20, y: 6, width: 38, height: 12))
+        body.fillColor = NSColor.black.withAlphaComponent(0.46)
+        body.strokeColor = .clear
+        node.addChild(body)
+        let head = SKShapeNode(ellipseIn: CGRect(x: 14, y: 13, width: 13, height: 10))
+        head.fillColor = NSColor.black.withAlphaComponent(0.48)
+        head.strokeColor = .clear
+        node.addChild(head)
+        let tail = SKShapeNode(rect: CGRect(x: -28, y: 12, width: 14, height: 4), cornerRadius: 2)
+        tail.fillColor = NSColor.black.withAlphaComponent(0.42)
+        tail.strokeColor = .clear
+        tail.zRotation = 0.45
+        node.addChild(tail)
+        return node
+    }
+
+    private func makeRollingSnowballNode() -> SKNode {
+        let node = SKNode()
+        let ball = SKShapeNode(circleOfRadius: 12)
+        ball.fillColor = NSColor.white.withAlphaComponent(0.76)
+        ball.strokeColor = NSColor.white.withAlphaComponent(0.34)
+        ball.lineWidth = 1
+        node.addChild(ball)
+        let swirl = SKShapeNode(rect: CGRect(x: -7, y: -1, width: 14, height: 2), cornerRadius: 1)
+        swirl.fillColor = NSColor(calibratedWhite: 0.78, alpha: 0.35)
+        swirl.strokeColor = .clear
+        node.addChild(swirl)
+        node.run(.repeatForever(.rotate(byAngle: .pi * 2, duration: 1.4)))
+        return node
     }
 
     private func makePolarBearNode(scale: CGFloat) -> SKNode {
